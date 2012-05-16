@@ -1,0 +1,16 @@
+Installation
+
+run> sudo npm install
+
+Starting
+
+run> coffee app.coffee
+
+Usage
+
+Uploading
+run> curl --form image1=@/Users/bgkittrell/Pictures/Han1_edited.jpg http://localhost:8000
+
+Downloading
+
+
