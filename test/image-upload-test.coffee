@@ -16,6 +16,7 @@ module.exports =
         end = new Date().getTime()
         console.log "Finished in #{end - start} millis"
         file = files[0]
+        test.ok file.width, 'No width'
         rest.get url + file.id,
           success: (data, response)->
             test.ok data.length > 1, 'Returned file is empty'

@@ -4,6 +4,8 @@ fs = require 'fs-extra'
 path = require 'path'
 gm = require 'gm'
 mkdirp = require 'mkdirp'
+touch = require('../util/touch').touch
+require('../util/array')
 
 Config = require '../config'
 
@@ -11,27 +13,39 @@ class File
   constructor: (@id, @originalName, @contents) ->
   directory: () ->
     return @dir ||= File.directory(@id)
-  filename: (type = 'original')->
-    return @originalName if type == 'original' && @originalName
-    throw new Error("Invalid type: #{type}") unless type.match /^\w+$/
+  filename: (format = 'original')->
+    return @originalName if format == 'original' && @originalName
+    throw new Error("Invalid format: #{format}") unless format.match /^[\w\.]+$/
 
-    name = (file for file in @contents when file.match ///\.#{type}\.\w+$///).toString()
-    unless name || type == 'original'
-      name = @fixType type
+    name = @findFormat format
+    unless name || format == 'original'
+      name = @changeFormat format
 
     return name
-  fixType: (type)->
-    @originalName.replace(/(.*\.)original\.(\w+)$/, "$1#{type}.$2")
-  path: (type) ->
+  findFormat: (format)->
+    @contents.match ///\.#{format}\.\w+$///
+  changeFormat: (format)->
+    @originalName.replace(/(.*\.)original\.(\w+)$/, "$1#{format}.$2")
+  path: (format) ->
     if @filename() && @directory()
-      return path.join @directory(), @filename(type)
+      return path.join @directory(), @filename(format)
     else
       throw new Error("#{@id} Not Found")
   join: (paths)->
     path.join @directory(), paths
   get: (name)->
-    value = (file for file in @contents when file.match ///#{name}///)
+    console.log @contents
+    value = @contents.match ///#{name}///
     value.toString() if value
+  set: (pair, cb)->
+    key = Object.keys(pair)[0]
+    name = "#{pair[key]}.#{key}"
+    @contents.push(name) unless name in @contents
+    console.log touch
+    console.log name
+    console.log cb
+
+    touch @join(name), cb
   value: (name)->
     value = @get(name)
     value.toString().split('.')[0] if value
@@ -41,9 +55,9 @@ class File
   json: ->
     id: @id
     finished: true
-  fetch: (type, callback)->
+  fetch: (format, callback)->
     callback.call(@)
-  create: (callback)->
+  create: (profile, callback)->
     callback.call(@)
   @directory: (id)->
     throw new Error("Invalid id: #{id}") unless id.match /^[\w-]+$/
@@ -55,7 +69,7 @@ class File
   @extension: (name)->
     parts = name.split('.')
     return parts[parts.length-1]
-  @create: (name, callback) ->
+  @create: (path, name, profile, callback) ->
     id = uuid.v4()
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
 
@@ -63,16 +77,17 @@ class File
     file = new clazz(id, originalName, [originalName])
 
     mkdirp.sync(file.directory())
+    fs.rename path, file.path()
 
-    file.create ()->
+    file.create profile, ()->
       callback(file)
-  @fetch: (id, type, callback) ->
+  @fetch: (id, format, callback) ->
     dirContents = fs.readdirSync(File.directory(id))
-    name = (file for file in dirContents when file.match ///\.original\.\w+$///).toString()
+    name = dirContents.match ///\.original\.\w+$///
 
     clazz = File.clazz(name)
     file = new clazz(id, name, dirContents)
-    file.fetch type, ()->
+    file.fetch format, ()->
       callback(file)
    @clazz: (name)->
      if File.extension(name) in Image.extensions

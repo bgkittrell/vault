@@ -10,6 +10,9 @@ fs.mkdir(Config.mediaDir)
 
 app = module.exports = express.createServer()
 
+app.on 'error', (err) ->
+  console.log 'there was an error:', err.stack
+
 allowCrossDomain = (req, res, next)->
   res.header('Access-Control-Allow-Origin', 'http://localhost:9001')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
@@ -29,22 +32,20 @@ app.configure 'development', ()->
 app.configure 'production', ()->
   app.use(express.errorHandler())
 
-# Routes
-
 app.param 'fileId', (req, res, next, fileId)->
   unless fileId.match /^\w+\-\w+\-\w+\-\w+\-\w+$/
     res.send(404)
     return next("#{fileId} not found")
   next()
 
-app.post '/:fileType/:fileId', fileController.update
+app.post '/:format/:fileId', fileController.update
 app.post '/', (req,res,next)->
   if req.files
     fileController.upload(req, res, next)
   else
     fileController.download(req, res, next)
 app.get '/:fileId.status', fileController.status
-app.get '/:fileType/:fileId', fileController.serve
+app.get '/:format/:fileId', fileController.serve
 app.get '/:fileId', fileController.serve
 
 app.listen(7000)

@@ -2,54 +2,61 @@ rest = require 'restler'
 fs = require 'fs'
 gm = require 'gm'
 {Zencoder} = require 'zencoder'
+helper = require('coffee-script').helpers
 
 Config = require '../config'
 File = require '../models/file'
 
 class Video extends File
   @extensions: ['mov', 'avi', 'ogv', 'mp4', 'm4v', 'mkv', 'flv']
-  path: (type) ->
-    if type == 'thumb'
+  path: (format) ->
+    if format == 'thumb'
       return @join('thumb.png')
-    else if type == 'poster'
+    else if format == 'poster'
       return @join('poster.png')
     else
-      super(type)
-  create: (callback)->
+      super(format)
+  create: (profile, callback)->
     callback.call(@)
     outputs = []
-    for name, profile of Config.videoProfiles
-      outputs.push
-        format: profile.format
+    videoProfile = if profile then Config.videoProfiles[profile] else Config.videoProfiles.default
+    for name, format of videoProfile
+      options = format.encoding
+      options = helper.merge options,
         public: no
         notifications: [
-          Config.serverUrl + profile.format + '/' + @id
+          Config.serverUrl + name + '/' + @id
         ]
         thumbnails:
           label: 'thumb'
+      outputs.push options
 
     @transcode outputs
+    @set profile: profile || 'default'
   transcode: (outputs)->
     Zencoder::api_key = '1e8ef8591b769f1a4b153c2819b7e6e2'
     Zencoder::Job.create
       input: Config.serverUrl + @id
       outputs: outputs
-  complete: (type, notification, callback)->
+  complete: (format, notification, callback)->
+    throw new Error('Invalid profile') unless Config.videoProfiles[@profile()][format]
     rest.get(notification.output.url, { encoding: 'binary' }).on 'complete', (data, response)=>
-      fs.writeFile @path(type), response.raw, (err)=>
-        console.error err if err
-        fs.writeFile @join("#{notification.output.state}.#{type}.status"), null, (err)=>
-          console.error err if err
+      console.log "Sub-profile: " +  format
+      console.log "Profile: " +  @profile()
+      ext = Config.videoProfiles[@profile()][format].encoding.format
+      fs.writeFile @path("#{ext}"), response.raw, (err)=>
+        throw new Error(err) if err
+        @set status: "#{notification.output.state}.#{format}", ()=>
           callback.call(@)
 
         if notification.output.state == 'finished'
-          fs.writeFile @join("#{notification.output.duration_in_ms}.#{type}.duration"), null, (err)=>
-            console.log error if err
+          if notification.output.duration_in_ms
+            @set duration: "#{notification.output.duration_in_ms}.#{format}"
 
-          fs.writeFile @join("#{notification.output.width}x#{notification.output.height}.#{type}.size"), null, (err)=>
-            console.log error if err
+          if notification.output.width
+            @set size:  "#{notification.output.width}x#{notification.output.height}.#{format}"
 
-    unless @poster() or notification.output.state != 'finished'
+    unless @poster() or notification.output.state != 'finished' or !notification.output.thumbnails
       thumbImage = notification.output.thumbnails[0].images[0]
       rest.get(thumbImage.url, { encoding: 'binary' }).on 'complete', (data, response)=>
         thumbPath = @join("poster.png")
@@ -58,17 +65,21 @@ class Video extends File
           gm(thumbPath).thumb 100,100, @join("thumb.png"), 100, ()->
 
   poster: ->
-    @get("poster.png")
+    @get "poster.png"
   duration: ->
-    @value(".duration$")
+    @value ".duration$"
   size: ->
-    @values(".size$")
+    @values ".size$"
+  profile: ->
+    @value ".profile$" || 'default'
   status: ->
-    for name, profile of Config.videoProfiles
-      return 'failed' if @get("failed.#{profile.format}.status$")
+    for name, format of Config.videoProfiles[@profile]
+      return 'failed' if @get("failed.#{format}.status$")
     return @value(".status$")
-  fixType: (type)->
-    @filename().replace(/(.*\.)original\.\w+$/, "$1#{type}")
+  findFormat: (format)->
+    @contents.match ///\.#{format}$///
+  changeFormat: (format)->
+    @filename().replace(/(.*\.)original\.\w+$/, "$1#{format}")
   json: ->
     size = @size()
     status = @status()

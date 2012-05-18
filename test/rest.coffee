@@ -28,13 +28,18 @@ class Rest
       callbacks.failure() if callbacks.failure
       throw new Error(error)
     )
-  @upload: (url, files, callbacks)->
-    post = {}
+  @upload: (url, files, post = {}, callbacks)->
+    unless callbacks
+      callbacks = arguments[arguments.length - 1]
+      post = {}
+
     count = 1
     for file in files
       size = fs.statSync(file).size
       console.log size
       post["upload#{count++}"] = rest.file(file, null, size)
+
+    console.log post
 
     console.log "Uploading to %s", url
     rest.post(url, multipart: true, data: post).on('success', (data, response)->

@@ -46,14 +46,46 @@ module.exports =
         image = files[1]
         post = zencoderResponse(url + image.id, url + video.id)
         count = 0
-        for name, profile of Config.videoProfiles
+        for name, profile of Config.videoProfiles.default
 
-          rest.postJson url + profile.format + '/' + video.id, post,
+          console.log "Posting notification for #{name}"
+          rest.postJson url + name + '/' + video.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
-              if count == Object.keys(Config.videoProfiles).length
+              if count == Object.keys(Config.videoProfiles.default).length
+                console.log "Getting status for #{video.id}"
+                rest.get url + video.id + '.status',
+                  success: (data)=>
+                    status = data
+                    console.log status
+                    test.equal status.status, 'finished'
+                    test.done()
 
+  testVideoProfileUpload: (test)->
+    filename = './test/data/waves.mov'
+    image = './test/data/han.jpg'
+    start = new Date().getTime()
+
+    rest.upload url,
+      [filename, filename],
+      { profile: 'stupeflix' },
+      success: (files)=>
+        end = new Date().getTime()
+        console.log "Finished in #{end - start} millis"
+        video = files[0]
+        image = files[1]
+        post = zencoderResponse(url + image.id, url + video.id)
+        count = 0
+        for name, profile of Config.videoProfiles.stupeflix
+
+          console.log "Posting notification for #{name}"
+          rest.postJson url + name + '/' + video.id, post,
+            success: (data, response)=>
+              test.equal response.statusCode, 200
+              count++
+              if count == Object.keys(Config.videoProfiles.stupeflix).length
+                console.log "Getting status for #{video.id}"
                 rest.get url + video.id + '.status',
                   success: (data)=>
                     status = data

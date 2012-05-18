@@ -11,82 +11,63 @@ class FileController
   serve: (req, res, next) ->
     console.log "Serving"
     id = req.params.fileId
-    type = req.params.fileType
-    try
-      File.fetch id, type, (file)=>
-        stat = fs.statSync(file.path(type))
-        res.writeHead 200,
-          'Content-Type': mime.lookup(file.filename(type)),
-          'Content-Length': stat.size
-        
-        read = fs.createReadStream file.path(type)
-        util.pump read, res
-    catch error
-      console.error error
-      res.send(404)
+    format = req.params.format
+    console.log id
+    console.log format
 
+    File.fetch id, format, (file)=>
+      stat = fs.statSync(file.path(format))
+      res.writeHead 200,
+        'Content-Type': mime.lookup(file.filename(format)),
+        'Content-Length': stat.size
+      
+      read = fs.createReadStream file.path(format)
+      util.pump read, res
    upload: (req, res, next) ->
     console.log "Uploading"
-    try
-      created = []
-      for key, upload of req.files
-        do (key, upload) =>
-          File.create upload.name, (file)->
-            fs.rename upload.path, file.path()
+    created = []
 
-            created.push file.json()
+    for key, upload of req.files
+      do (key, upload) =>
+        File.create upload.path, upload.name, req.param('profile'), (file)->
+          created.push file.json()
 
-            if created.length == Object.keys(req.files).length
-              res.end JSON.stringify(created)
-    catch error
-      console.error error
-      res.send(500)
+          if created.length == Object.keys(req.files).length
+            res.end JSON.stringify(created)
   download: (req, res, next) ->
-    try
-      console.log "Downloading"
+    console.log "Downloading"
 
-      url = req.body.url
-      filename = req.body.filename
+    url = req.body.url
+    filename = req.body.filename
+    profile = req.body.profile
+    console.log req.body
 
-      filePath = path.join(Config.tmpDir, filename)
-      rest.get(url, { encoding: 'binary' }).on 'complete', (data, response)=>
-        fs.writeFile filePath, response.raw, (err)=>
-          throw new Error(err) if err
+    filePath = path.join(Config.tmpDir, filename)
+    rest.get(url, { encoding: 'binary' }).on 'success', (data, response)=>
+      fs.writeFile filePath, response.raw, (err)=>
+        throw new Error(err) if err
 
-          File.create filename, (file)=>
-            console.log "Downloading %s", url
-
-            fs.rename filePath, file.path()
-            res.end JSON.stringify(file.json())
-    catch error
-      console.error error
-      res.send(500)
-  update: (req, res, next) ->
-    try
-      console.log "Updating"
-      id = req.params.fileId
-      type = req.params.fileType
-
-      notification = req.body
-
-      File.fetch id, type, (file)=>
-        console.log "Downloading %s", notification.output.url
-        file.complete type, notification, ()->
+        File.create filePath, filename, profile, (file)=>
+          console.log "Downloading %s", url
           res.end JSON.stringify(file.json())
-    catch error
-      console.error error
-      res.send(500)
-  status: (req, res, next) ->
-    try
-      console.log "Getting Status"
-      id = req.params.fileId
-      type = req.params.fileType
+  update: (req, res, next) ->
+    console.log "Updating"
+    id = req.params.fileId
+    format = req.params.format
 
-      File.fetch id, type, (file)=>
-        res.send(file.json())
-    catch error
-      console.error error
-      res.send(500)
+    notification = req.body
+
+    File.fetch id, format, (file)=>
+      console.log "Downloading %s", notification.output.url
+      file.complete format, notification, ()->
+        res.end JSON.stringify(file.json())
+  status: (req, res, next) ->
+    console.log "Getting Status"
+    id = req.params.fileId
+    format = req.params.format
+
+    File.fetch id, format, (file)=>
+      res.send(file.json())
 
 
 module.exports = FileController

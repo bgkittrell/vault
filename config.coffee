@@ -14,9 +14,31 @@ Config =
       resize:
         h: 600
   videoProfiles:
-    mobile:
-      format: 'mp4'
-    archive:
-      format: 'ogv'
+    default:
+      web:
+        encoding:
+          size: '480x360'
+          format: 'mp4'
+      archive:
+        async: true
+        encoding:
+          format: 'ogv'
+          quality: 5
+          audio_quality: 5
+          speed: 5
+    stupeflix:
+      archive:
+        async: true
+        encoding:
+          format: 'ogv'
+          quality: 5
+          audio_quality: 5
+          speed: 5
+    audio:
+      mp3:
+        encoding:
+          format: 'mp3'
+          audio_quality: 5
+          speed: 5
 
 module.exports = Config
