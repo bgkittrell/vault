@@ -44,6 +44,7 @@ class FileController
 
     filePath = path.join(Config.tmpDir, filename)
     rest.get(url, { encoding: 'binary' }).on 'success', (data, response)=>
+      console.log "Response length: %s", response.raw.length
       fs.writeFile filePath, response.raw, (err)=>
         throw new Error(err) if err
 

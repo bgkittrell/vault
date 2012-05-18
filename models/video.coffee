@@ -40,10 +40,9 @@ class Video extends File
       outputs: outputs
   complete: (format, notification, callback)->
     throw new Error('Invalid profile') unless Config.videoProfiles[@profile()][format]
-    rest.get(notification.output.url, { encoding: 'binary' }).on 'complete', (data, response)=>
-      console.log "Sub-profile: " +  format
-      console.log "Profile: " +  @profile()
+    rest.get(notification.output.url, { encoding: 'binary' }).on 'success', (data, response)=>
       ext = Config.videoProfiles[@profile()][format].encoding.format
+      console.log "Response Length: %s", response.raw.length
       fs.writeFile @path("#{ext}"), response.raw, (err)=>
         throw new Error(err) if err
         @set status: "#{notification.output.state}.#{format}", ()=>

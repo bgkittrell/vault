@@ -1,7 +1,7 @@
 Config =
   mediaDir: '/tmp/media'
   tmpDir: '/tmp/'
-  serverUrl: 'http://64.19.36.226:7000/'
+  serverUrl: 'http://98.156.53.253:7000/'
   imageProfiles:
     thumb:
       crop:

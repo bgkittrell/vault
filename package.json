@@ -10,7 +10,7 @@
       "gm": "",
       "mime": "",
       "mkdirp": "",
-      "restler": "",
+      "restler": "git://github.com/bgkittrell/restler.git",
       "zencoder": ""
   }
   , "scripts": {
