@@ -1,7 +1,12 @@
 Config =
   mediaDir: '/tmp/media'
   tmpDir: '/tmp/'
-  serverUrl: 'http://98.156.53.253:7000/'
+  deleteDir: '/tmp/delete'
+  serverHost: 'localhost'
+  serverPort: 7000
+  serverProtocol: 'http'
+  serverUrl: ->
+    "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
   imageProfiles:
     thumb:
       crop:
@@ -9,7 +14,7 @@ Config =
         h: 100
     medium:
       resize:
-        w: 400
+        w: 200
     large:
       resize:
         h: 600

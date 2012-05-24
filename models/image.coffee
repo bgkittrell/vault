@@ -28,5 +28,6 @@ class Image extends File
     width: @width
     height: @height
     finished: true
+    filename: @filename()
 
 module.exports = Image

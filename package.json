@@ -1,22 +1,24 @@
 {
-    "name": "application-name"
-  , "version": "0.0.1"
-  , "private": true
-  , "dependencies": {
-      "express": "2.5.5",
-      "node-uuid": "",
-      "fs-extra": "",
-      "coffee-script": "",
-      "gm": "",
-      "mime": "",
-      "mkdirp": "",
-      "restler": "git://github.com/bgkittrell/restler.git",
-      "zencoder": ""
-  }
-  , "scripts": {
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "2.5.5",
+    "node-uuid": "",
+    "fs-extra": "",
+    "coffee-script": "",
+    "gm": "",
+    "mime": "",
+    "mkdirp": "",
+    "restler": "git://github.com/bgkittrell/restler.git",
+    "zencoder": "",
+    "request": "~2.9.202"
+  },
+  "scripts": {
     "test": "make test"
-  }
-  , "devDependencies": {
-    "nodeunit": ""
+  },
+  "devDependencies": {
+    "nodeunit": "",
+    "sleep": "~1.1.0"
   }
 }

@@ -27,23 +27,19 @@ class File
   changeFormat: (format)->
     @originalName.replace(/(.*\.)original\.(\w+)$/, "$1#{format}.$2")
   path: (format) ->
-    if @filename() && @directory()
+    if @filename(format) && @directory()
       return path.join @directory(), @filename(format)
     else
       throw new Error("#{@id} Not Found")
   join: (paths)->
     path.join @directory(), paths
   get: (name)->
-    console.log @contents
     value = @contents.match ///#{name}///
     value.toString() if value
   set: (pair, cb)->
     key = Object.keys(pair)[0]
     name = "#{pair[key]}.#{key}"
     @contents.push(name) unless name in @contents
-    console.log touch
-    console.log name
-    console.log cb
 
     touch @join(name), cb
   value: (name)->
@@ -55,6 +51,7 @@ class File
   json: ->
     id: @id
     finished: true
+    filename: @filename()
   fetch: (format, callback)->
     callback.call(@)
   create: (profile, callback)->
@@ -73,8 +70,8 @@ class File
     id = uuid.v4()
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
 
-    clazz = File.clazz(originalName)
-    file = new clazz(id, originalName, [originalName])
+    cast = File.cast(originalName)
+    file = new cast(id, originalName, [originalName])
 
     mkdirp.sync(file.directory())
     fs.rename path, file.path()
@@ -85,11 +82,14 @@ class File
     dirContents = fs.readdirSync(File.directory(id))
     name = dirContents.match ///\.original\.\w+$///
 
-    clazz = File.clazz(name)
-    file = new clazz(id, name, dirContents)
+    cast = File.cast(name)
+    file = new cast(id, name, dirContents)
     file.fetch format, ()->
       callback(file)
-   @clazz: (name)->
+   @delete: (id, callback)->
+     File.fetch id, 'original', (file)->
+       fs.rename file.path(), path.join(Config.deleteDir, id), callback
+   @cast: (name)->
      if File.extension(name) in Image.extensions
        return Image
      else if File.extension(name) in Video.extensions

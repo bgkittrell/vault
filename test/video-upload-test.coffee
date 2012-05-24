@@ -1,5 +1,5 @@
 app = require('../app')
-
+url = require 'url'
 sys = require 'util'
 rest = require './rest'
 fs = require 'fs'
@@ -9,11 +9,9 @@ Video = require '../models/video'
 Video.prototype.transcode = ()->
   console.log "Don't actually send to zencoder"
 
-url = "http://localhost:7000/"
+serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 
 zencoderResponse =  (thumbUrl, videoUrl)->
-  console.log thumbUrl
-  console.log videoUrl
   "output":
       "thumbnails": [{
           "images": [{
@@ -37,28 +35,25 @@ module.exports =
     image = './test/data/han.jpg'
     start = new Date().getTime()
 
-    rest.upload url,
+    rest.upload serverUrl,
       [filename, filename],
       success: (files)=>
         end = new Date().getTime()
         console.log "Finished in #{end - start} millis"
         video = files[0]
         image = files[1]
-        post = zencoderResponse(url + image.id, url + video.id)
+        post = zencoderResponse(serverUrl + image.id, serverUrl + video.id)
         count = 0
         for name, profile of Config.videoProfiles.default
 
-          console.log "Posting notification for #{name}"
-          rest.postJson url + name + '/' + video.id, post,
+          rest.postJson serverUrl + name + '/' + video.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == Object.keys(Config.videoProfiles.default).length
-                console.log "Getting status for #{video.id}"
-                rest.get url + video.id + '.status',
+                rest.get serverUrl + video.id + '.status',
                   success: (data)=>
                     status = data
-                    console.log status
                     test.equal status.status, 'finished'
                     test.done()
 
@@ -67,7 +62,7 @@ module.exports =
     image = './test/data/han.jpg'
     start = new Date().getTime()
 
-    rest.upload url,
+    rest.upload serverUrl,
       [filename, filename],
       { profile: 'stupeflix' },
       success: (files)=>
@@ -75,21 +70,18 @@ module.exports =
         console.log "Finished in #{end - start} millis"
         video = files[0]
         image = files[1]
-        post = zencoderResponse(url + image.id, url + video.id)
+        post = zencoderResponse(serverUrl + image.id, serverUrl + video.id)
         count = 0
         for name, profile of Config.videoProfiles.stupeflix
 
-          console.log "Posting notification for #{name}"
-          rest.postJson url + name + '/' + video.id, post,
+          rest.postJson serverUrl + name + '/' + video.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == Object.keys(Config.videoProfiles.stupeflix).length
-                console.log "Getting status for #{video.id}"
-                rest.get url + video.id + '.status',
+                rest.get serverUrl + video.id + '.status',
                   success: (data)=>
                     status = data
-                    console.log status
                     test.equal status.status, 'finished'
                     test.done()
 

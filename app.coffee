@@ -3,15 +3,18 @@ express = require 'express'
 
 Config = require './config'
 
+RegistryController = require './controllers/registry'
+registryController = new RegistryController()
 FileController = require './controllers/file'
-fileController = new FileController(app)
+fileController = new FileController()
 
 fs.mkdir(Config.mediaDir)
+fs.mkdir(Config.deleteDir)
+
+port = Config.serverPort
 
 app = module.exports = express.createServer()
-
-app.on 'error', (err) ->
-  console.log 'there was an error:', err.stack
+app.use(express.logger())
 
 allowCrossDomain = (req, res, next)->
   res.header('Access-Control-Allow-Origin', 'http://localhost:9001')
@@ -24,7 +27,6 @@ app.configure ()->
   app.use(express.bodyParser())
   app.use(express.methodOverride())
   app.use(app.router)
-  app.use(express.logger({ format: ':method :url' }))
 
 app.configure 'development', ()->
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }))
@@ -32,21 +34,29 @@ app.configure 'development', ()->
 app.configure 'production', ()->
   app.use(express.errorHandler())
 
+app.configure 'test', ()->
+  port += 1
+
 app.param 'fileId', (req, res, next, fileId)->
   unless fileId.match /^\w+\-\w+\-\w+\-\w+\-\w+$/
     res.send(404)
     return next("#{fileId} not found")
   next()
 
+app.get '/registry', registryController.get
+app.post '/registry', registryController.add
+app.put '/registry', registryController.sync
+
+app.get '/:fileId.status', fileController.status
+app.get '/:format/:fileId', fileController.serve
+app.get '/:fileId', fileController.serve
 app.post '/:format/:fileId', fileController.update
 app.post '/', (req,res,next)->
   if req.files
     fileController.upload(req, res, next)
   else
     fileController.download(req, res, next)
-app.get '/:fileId.status', fileController.status
-app.get '/:format/:fileId', fileController.serve
-app.get '/:fileId', fileController.serve
+app.delete '/:fileId', fileController.delete
 
-app.listen(7000)
+app.listen(port)
 console.log("Vault server listening on port %d in %s mode", app.address().port, app.settings.env)

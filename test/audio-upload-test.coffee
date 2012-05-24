@@ -1,5 +1,5 @@
 app = require('../app')
-
+url = require 'url'
 sys = require 'util'
 rest = require './rest'
 fs = require 'fs'
@@ -9,11 +9,9 @@ Video = require '../models/video'
 Video.prototype.transcode = ()->
   console.log "Don't actually send to zencoder"
 
-url = "http://localhost:7000/"
+serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 
 zencoderResponse =  (thumbUrl, audioUrl)->
-  console.log thumbUrl
-  console.log audioUrl
   "output":
       "thumbnails": [{
           "images": [{
@@ -38,7 +36,7 @@ module.exports =
     image = './test/data/han.jpg'
     start = new Date().getTime()
 
-    rest.upload url,
+    rest.upload serverUrl,
       [filename,image],
       { profile: 'audio' },
       success: (files)=>
@@ -46,20 +44,17 @@ module.exports =
         console.log "Finished in #{end - start} millis"
         audio = files[0]
         image = files[1]
-        post = zencoderResponse(url + image.id, url + audio.id)
+        post = zencoderResponse(serverUrl + image.id, serverUrl + audio.id)
         count = 0
         for name, profile of Config.videoProfiles.audio
-          console.log "Posting notification for #{name}"
-          rest.postJson url + name + '/' + audio.id, post,
+          rest.postJson serverUrl + name + '/' + audio.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == Object.keys(Config.videoProfiles.audio).length
-                console.log "Getting status for #{audio.id}"
-                rest.get url + audio.id + '.status',
+                rest.get serverUrl + audio.id + '.status',
                   success: (data)=>
                     status = data
-                    console.log status
                     test.equal status.status, 'finished'
                     test.done()
 
