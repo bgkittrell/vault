@@ -1,10 +1,10 @@
-app = require('../app')
+app = require('../../app')
 url = require 'url'
 sys = require 'util'
-rest = require './rest'
+rest = require '../rest'
 fs = require 'fs'
 path = require 'path'
-Config = require '../config'
+Config = require '../../config'
 
 serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 

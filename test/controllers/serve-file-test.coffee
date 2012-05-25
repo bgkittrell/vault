@@ -1,10 +1,11 @@
-app = require('../app')
+app = require '../../app'
 url = require 'url'
 sys = require 'util'
 rest = require 'restler'
 fs = require 'fs'
 gm = require 'gm'
-Config = require '../config'
+
+Config = require '../../config'
 
 serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 
@@ -23,9 +24,9 @@ module.exports =
   testProfiles: (test)->
     uploadFile (files)->
       count = 0
-      keyCount = Object.keys(Config.imageProfiles).length
+      keyCount = Object.keys(Config.profiles.image).length
 
-      for name, profile of Config.imageProfiles
+      for name, profile of Config.profiles.image
         do (name, profile)->
           file = JSON.parse(files)[0]
           rest.get(serverUrl + name + '/' + file.id, { encoding: 'binary' }).on('complete', (data, response)->
@@ -44,7 +45,9 @@ module.exports =
                 if count == keyCount
                   test.done()
           ).on('fail', (error)->
+            console.error error
             test.ok false, error
           ).on('error', (error)->
+            console.error error
             test.ok false, error
           )

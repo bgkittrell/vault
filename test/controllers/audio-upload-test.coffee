@@ -1,10 +1,10 @@
-app = require('../app')
+app = require('../../app')
 url = require 'url'
 sys = require 'util'
-rest = require './rest'
+rest = require '../rest'
 fs = require 'fs'
-Config = require '../config'
-Video = require '../models/video'
+Config = require '../../config'
+Video = require '../../models/video'
 
 Video.prototype.transcode = ()->
   console.log "Don't actually send to zencoder"

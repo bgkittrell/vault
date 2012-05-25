@@ -1,10 +1,10 @@
 url = require 'url'
 path = require 'path'
 request = require 'request'
-Config = require '../config'
+Config = require '../../config'
 
 # Master
-app1 = require '../app'
+app1 = require '../../app'
 serverUrl1 = url.format(protocol: 'http', hostname: app1.address().address, port: app1.address().port, pathname: '/')
 console.log "Testing with URL1: %s", serverUrl1
 masterUrl = Config.serverUrl()
@@ -15,7 +15,7 @@ Config.masterUrl = serverUrl1
 slave1Url = Config.serverUrl()
 
 delete require.cache[path.resolve(__dirname, '..', 'app.coffee')]
-app2 = require '../app'
+app2 = require '../../app'
 
 serverUrl2 = url.format(protocol: 'http', hostname: app2.address().address, port: app2.address().port, pathname: '/')
 console.log "Testing with URL2: %s", serverUrl2
@@ -26,7 +26,7 @@ Config.masterUrl = serverUrl1
 slave2Url = Config.serverUrl()
 
 delete require.cache[path.resolve(__dirname, '..', 'app.coffee')]
-app3 = require '../app'
+app3 = require '../../app'
 
 serverUrl3 = url.format(protocol: 'http', hostname: app3.address().address, port: app3.address().port, pathname: '/')
 console.log "Testing with URL3: %s", serverUrl3

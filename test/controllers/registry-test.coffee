@@ -1,8 +1,8 @@
 url = require 'url'
-app = require('../app')
+app = require '../app'
 request = require 'request'
 
-Config = require '../config'
+Config = require '../../config'
 
 serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 console.log "Testing with URL: %s", serverUrl

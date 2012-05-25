@@ -36,9 +36,10 @@ class Rest
       size = fs.statSync(file).size
       post["upload#{count++}"] = rest.file(file, null, size)
 
+    console.log post
+
     rest.post(url, multipart: true, data: post).on('success', (data, response)->
       callbacks.success(JSON.parse(data)) if callbacks.success
-      Rest.error() if Rest.error
     ).on('fail', (error)->
       console.error error
       callbacks.failure() if callbacks.failure

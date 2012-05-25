@@ -12,7 +12,7 @@
     "mkdirp": "",
     "restler": "git://github.com/bgkittrell/restler.git",
     "zencoder": "",
-    "request": "~2.9.202"
+    "request": ""
   },
   "scripts": {
     "test": "make test"

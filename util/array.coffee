@@ -10,3 +10,9 @@ unless Array::match
       if element.match re
         return element
     return null
+unless Array::first
+  Array::first = () ->
+    this[0]
+unless Array::last
+  Array::last = () ->
+    this[this.length-1]

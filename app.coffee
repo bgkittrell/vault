@@ -16,6 +16,9 @@ port = Config.serverPort
 app = module.exports = express.createServer()
 app.use(express.logger())
 
+app.on 'error', (err) ->
+  console.log 'there was an error:', err.stack
+
 allowCrossDomain = (req, res, next)->
   res.header('Access-Control-Allow-Origin', 'http://localhost:9001')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
@@ -52,6 +55,7 @@ app.get '/:format/:fileId', fileController.serve
 app.get '/:fileId', fileController.serve
 app.post '/:format/:fileId', fileController.update
 app.post '/', (req,res,next)->
+  console.log req
   if req.files
     fileController.upload(req, res, next)
   else
