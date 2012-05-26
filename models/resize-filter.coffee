@@ -1,17 +1,17 @@
 gm = require 'gm'
 
-class CropFilter
+class ResizeFilter
   constructor: (@format, @settings)->
   filter: (file, cb)->
     n = file.filename(@format)
     if n not in file.contents
       path = if @settings.file then file.join(@settings.file) else file.path()
-      gm(path).thumb @settings.w, @settings.h, file.path(@format), @settings.quality || 100, (error)->
+      gm(path).resize(@settings.w, @settings.h).write file.path(@format), (error)->
         throw new Error(error) if error
         file.refresh()
         cb(file)
     else
       cb(file)
 
-module.exports = CropFilter
+module.exports = ResizeFilter
 

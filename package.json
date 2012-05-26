@@ -8,17 +8,16 @@
     "fs-extra": "",
     "coffee-script": "",
     "gm": "",
-    "mime": "",
     "mkdirp": "",
     "restler": "git://github.com/bgkittrell/restler.git",
     "zencoder": "",
-    "request": ""
+    "request": "",
+    "mime": "~1.2.5"
   },
   "scripts": {
     "test": "make test"
   },
   "devDependencies": {
-    "nodeunit": "",
-    "sleep": "~1.1.0"
+    "nodeunit": ""
   }
 }

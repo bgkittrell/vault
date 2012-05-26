@@ -5,7 +5,6 @@ rest = require '../rest'
 fs = require 'fs'
 
 serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
-console.log serverUrl
 
 module.exports =
   testImageUpload: (test)->

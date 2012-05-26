@@ -3,11 +3,14 @@ url = require 'url'
 sys = require 'util'
 rest = require '../rest'
 fs = require 'fs'
-Config = require '../../config'
-Video = require '../../models/video'
+hash = require '../../util/hash'
 
-Video.prototype.transcode = ()->
-  console.log "Don't actually send to zencoder"
+Config = require '../../config'
+Profile = require '../../models/profile'
+Zencoder = require '../../models/zencoder'
+
+Zencoder.prototype.start = (file)->
+  console.log "Bypassing Zencoder"
 
 serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 
@@ -44,13 +47,15 @@ module.exports =
         image = files[1]
         post = zencoderResponse(serverUrl + image.id, serverUrl + video.id)
         count = 0
-        for name, profile of Config.videoProfiles.default
-
+        profile = new Profile('video', Config.profiles.video)
+        formats = hash(profile.formats).filter((k,v)-> v.transcoder)
+        console.log formats
+        for name, format of formats
           rest.postJson serverUrl + name + '/' + video.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
-              if count == Object.keys(Config.videoProfiles.default).length
+              if count == hash(formats).keys().length
                 rest.get serverUrl + video.id + '.status',
                   success: (data)=>
                     status = data
@@ -72,13 +77,14 @@ module.exports =
         image = files[1]
         post = zencoderResponse(serverUrl + image.id, serverUrl + video.id)
         count = 0
-        for name, profile of Config.videoProfiles.stupeflix
-
+        profile = new Profile('stupeflix', Config.profiles.stupeflix)
+        formats = hash(profile.formats).filter((k,v)-> v.transcoder)
+        for name, format of formats
           rest.postJson serverUrl + name + '/' + video.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
-              if count == Object.keys(Config.videoProfiles.stupeflix).length
+              if count == hash(formats).keys().length
                 rest.get serverUrl + video.id + '.status',
                   success: (data)=>
                     status = data

@@ -1,5 +1,5 @@
 url = require 'url'
-app = require '../app'
+app = require '../../app'
 request = require 'request'
 
 Config = require '../../config'

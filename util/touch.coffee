@@ -1,6 +1,6 @@
 fs = require 'fs'
-module.exports =
-  touch: (file, cb)->
-    fs.writeFile file, null, (err)=>
-      throw new Error(err) if err
-      cb.call() if cb
+module.exports = (file, cb)->
+  fs.writeFile file, null, (err)=>
+    throw new Error(err) if err
+    console.log "Touched: " + file
+    cb.call() if cb

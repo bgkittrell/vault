@@ -21,15 +21,12 @@ class FileController
       read = fs.createReadStream file.path(format)
       util.pump read, res
   upload: (req, res, next) ->
-    console.log "Uploading"
     created = []
 
     for key, upload of req.files
       do (key, upload) =>
         if upload.name
-          console.log "Processing: %s", upload.name
           File.create upload.path, upload.name, req.param('profile'), (file)->
-            console.log "Created: %s", upload.name
             created.push file.json()
 
             if created.length == Object.keys(req.files).length
@@ -43,15 +40,18 @@ class FileController
     download url, filePath, ->
       File.create filePath, filename, profile, (file)->
         res.end JSON.stringify(file.json())
-  update: (req, res, next) ->
+  finish: (req, res, next) ->
     id = req.params.fileId
     format = req.params.format
 
     notification = req.body
 
     File.fetch id, format, (file)=>
-      file.complete format, notification, ()->
-        res.end JSON.stringify(file.json())
+      if transcoder = file.profile().transcoder(format)
+        transcoder.finish file, notification, ->
+          res.end JSON.stringify(file.json())
+      else
+        res.end new Error("No transcoder")
   status: (req, res, next) ->
     id = req.params.fileId
     format = req.params.format

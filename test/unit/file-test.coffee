@@ -2,10 +2,8 @@ fs = require 'fs-extra'
 gm = require 'gm'
 path = require 'path'
 
-File = require '../../models/file'
-Video = require '../../models/video'
-Image = require '../../models/image'
 Config = require '../../config'
+File = require '../../models/file'
 
 standardFileTests = (filename)->
   'Set Up': (test)->
@@ -73,7 +71,8 @@ module.exports =
         @file = _file
         test.ok @file, "File wasn't created"
         test.ok @file.id.match /[\w-]{36}/, "File id is invalid"
-        test.equal @file.profile(), 'stupeflix'
+        console.log @file.profile()
+        test.equal @file.profile().name, 'stupeflix'
         test.ok @file instanceof File, "File should be an instance of File"
         test.done()
     'Change Format': (test)=>
@@ -104,7 +103,7 @@ module.exports =
         @file = _file
         test.ok @file, "File wasn't created"
         test.ok @file.id.match /[\w-]{36}/, "File id is invalid"
-        test.equal @file.profile(), 'image'
+        test.equal @file.profile().name, 'image'
         test.ok @file instanceof File, "File should be an instance of File"
         test.done()
     'Change Format': (test)=>

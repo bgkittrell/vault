@@ -53,9 +53,8 @@ app.put '/registry', registryController.sync
 app.get '/:fileId.status', fileController.status
 app.get '/:format/:fileId', fileController.serve
 app.get '/:fileId', fileController.serve
-app.post '/:format/:fileId', fileController.update
+app.post '/:format/:fileId', fileController.finish
 app.post '/', (req,res,next)->
-  console.log req
   if req.files
     fileController.upload(req, res, next)
   else

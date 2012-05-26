@@ -14,7 +14,7 @@ Config.serverPort += 1
 Config.masterUrl = serverUrl1
 slave1Url = Config.serverUrl()
 
-delete require.cache[path.resolve(__dirname, '..', 'app.coffee')]
+delete require.cache[path.resolve(__dirname, '..', '..', 'app.coffee')]
 app2 = require '../../app'
 
 serverUrl2 = url.format(protocol: 'http', hostname: app2.address().address, port: app2.address().port, pathname: '/')
@@ -25,7 +25,7 @@ Config.serverPort += 1
 Config.masterUrl = serverUrl1
 slave2Url = Config.serverUrl()
 
-delete require.cache[path.resolve(__dirname, '..', 'app.coffee')]
+delete require.cache[path.resolve(__dirname, '..', '..', 'app.coffee')]
 app3 = require '../../app'
 
 serverUrl3 = url.format(protocol: 'http', hostname: app3.address().address, port: app3.address().port, pathname: '/')

@@ -1,6 +1,6 @@
 fs = require 'fs'
 gm = require 'gm'
-crop = require '../../models/crop-filter'
+CropFilter = require '../../models/crop-filter'
 File = require '../../models/file'
 
 module.exports =
@@ -11,7 +11,8 @@ module.exports =
       test.ok @file, "File wasn't created"
       test.done()
   'Crop Image': (test)=>
-    crop @file, 'thumb', =>
+    crop = new CropFilter 'thumb', w: 100, h: 100
+    crop.filter @file, =>
       fs.stat @file.join('han.thumb.jpg'), (err, stat)=>
         test.ifError err
         gm(@file.path('thumb')).size (err, value)=>

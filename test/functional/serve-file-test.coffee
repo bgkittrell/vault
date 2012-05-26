@@ -4,10 +4,12 @@ sys = require 'util'
 rest = require 'restler'
 fs = require 'fs'
 gm = require 'gm'
+hash = require '../../util/hash'
 
 Config = require '../../config'
+Profile = require '../../models/profile'
 
-serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
+serverUrl = 'http://localhost:7000/' #url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
 
 uploadFile = (callback)->
   filename = './test/data/han.jpg'
@@ -18,16 +20,18 @@ uploadFile = (callback)->
       data: {
         'upload2': rest.file(filename, null, size, null, 'image/jpeg')
       }
-    }).on 'complete', callback
+    }).on 'success', callback
 
 module.exports =
   testProfiles: (test)->
+    console.log "Starting test"
     uploadFile (files)->
       count = 0
-      keyCount = Object.keys(Config.profiles.image).length
+      profile = new Profile('image', Config.profiles.image)
+      keyCount = hash(profile.formats).keys().length
 
-      for name, profile of Config.profiles.image
-        do (name, profile)->
+      for name, format of profile.formats
+        do (name, format)->
           file = JSON.parse(files)[0]
           rest.get(serverUrl + name + '/' + file.id, { encoding: 'binary' }).on('complete', (data, response)->
             fs.writeFile "/tmp/#{name}#{file.id}", response.raw, (err)->
@@ -35,7 +39,7 @@ module.exports =
               test.equal response.statusCode, 200
 
               gm("/tmp/#{name}#{file.id}").size (err, value)->
-                dims = profile.crop || profile.resize
+                dims = format.filter.settings
                 if dims.w
                   test.equal dims.w, value.width
                 else if dims.h
@@ -45,9 +49,11 @@ module.exports =
                 if count == keyCount
                   test.done()
           ).on('fail', (error)->
+            console.log "FAILURE"
             console.error error
             test.ok false, error
           ).on('error', (error)->
+            console.log "ERROR"
             console.error error
             test.ok false, error
           )

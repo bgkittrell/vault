@@ -2,21 +2,19 @@ uuid = require 'node-uuid'
 fs = require 'fs-extra'
 path = require 'path'
 mkdirp = require 'mkdirp'
-touch = require('../util/touch').touch
-require('../util/array')
-require('../util/hash')
+touch = require '../util/touch'
+array = require '../util/array'
+hash = require '../util/hash'
 
 Config = require '../config'
+Profile = require './profile'
 
 class File
   constructor: (@id, @originalName) ->
-    console.log @originalName
     if @originalName
-      console.log 1
       @contents = []
     else
-      console.log 2
-      @originalName = @refresh().match ///\.original\.\w+$///
+      @originalName = array(@refresh()).match ///\.original\.\w+$///
 
   # Filesystem
   directory: () ->
@@ -36,27 +34,28 @@ class File
     else
       throw new Error("#{@id} Not Found")
   findFormat: (format)->
-    @contents.match ///#{@prefix()}\.#{format}///
+    array(@contents).match ///#{@prefix()}\.#{format}///
   rename: (format)->
     return "#{@prefix()}.#{format}.#{@extension(format)}"
   prefix: ()->
     return @originalName.split('.')[0]
   extension: (format)->
-    if profile = Config.profiles[@profile()]
-      if format = profile[format]
-        if transcode = format.transcode
-          return transcode.encoding.format
+    if format = @profile().formats[format]
+      if transcoder = format.transcoder
+        return transcoder.settings.format
     return File.extension(@originalName)
   join: (paths)->
     path.join @directory(), paths
   
   # Metadata
   get: (name)->
-    value = @contents.match ///#{name}///
+    value = array(@contents).match ///#{name}///
     value.toString().split('.')[0] if value
   set: (pair, cb)->
-    key = Object.keys(pair)[0]
+    key = hash(pair).firstKey()
+    console.log key
     name = "#{pair[key]}.#{key}"
+    console.log name
     @contents.push(name) unless name in @contents
 
     touch @join(name), cb
@@ -65,12 +64,9 @@ class File
   values: (name, delim = 'x')->
     value = @get(name)
     value.split(delim) if value
-  profile: ->
-    @get ".profile$"
   status: ->
-    if p = @profile()
-      for name, format of Config.profiles[p]
-        return 'failed' if @get("failed.#{format}.status$")
+    for name, format of @profile().formats
+      return 'failed' if @get("failed.#{format}.status$")
     return @get(".status$")
   json: ->
     size = @values('size')
@@ -84,10 +80,9 @@ class File
       status: status
       filename: @filename()
     }
-  filter: (format)->
-    if profile = Config.profiles[@profile()]
-      if format = profile[format]
-        return format.filter.keys().first()
+  profile: ->
+    p = @get ".profile$"
+    new Profile(p, Config.profiles[p])
 
   # Static
   @directory: (id)->
@@ -104,29 +99,43 @@ class File
     id = uuid.v4()
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
 
-    console.log name
     file = new File(id, originalName)
 
     mkdirp.sync(file.directory())
     fs.rename path, file.path(), ()->
       file.set profile: profile || File.defaultProfile(name), ->
-        callback(file)
+        console.log "Profile: " + file.profile().name
+        File.meta file, callback
+
+    File.transcoder file
   @fetch: (id, format, callback) ->
     file = new File(id)
+    File.filter file, format, callback
 
-    if filter = Config.filters[file.filter(format)]
-      filter file, format, ->
+  @delete: (id, callback)->
+    File.fetch id, 'original', (file)->
+      fs.rename file.path(), path.join(Config.deleteDir, id), callback
+  @defaultProfile: (filename)->
+    for name, profile of Config.profiles
+      if profile.extensions and File.extension(filename) in profile.extensions
+        return name
+    'default'
+
+  @transcoder: (file, callback)->
+    for format in file.profile().formats
+      if transcoder = format.transcoder
+        transcoder.start file
+  @meta: (file, callback)->
+    if meta = file.profile().metaFilter
+      meta.filter file, ->
         callback(file)
     else
       callback(file)
-   @delete: (id, callback)->
-     File.fetch id, 'original', (file)->
-       fs.rename file.path(), path.join(Config.deleteDir, id), callback
-   @defaultProfile: (filename)->
-     for name, profile of Config.profiles
-       if profile.extensions and File.extension(filename) in profile.extensions
-         return name
-     'default'
-
+  @filter: (file, format, callback)->
+    if format && filter = file.profile().filter(format)
+      filter.filter file, ->
+        callback(file)
+    else
+      callback(file)
 
 module.exports = File

@@ -1,15 +1,18 @@
 reporter = require('nodeunit').reporters.default
 app = require('../app')
 reporter.run [
-    'test/models/file-test.coffee',
-    'test/controllers/serve-file-test.coffee',
-    'test/controllers/upload-file-test.coffee',
-    'test/controllers/image-upload-test.coffee',
-    'test/controllers/video-upload-test.coffee',
-    'test/controllers/audio-upload-test.coffee',
-    'test/controllers/delete-file-test.coffee',
-    'test/controllers/registry-test.coffee',
-    'test/controllers/slave-test.coffee'
+    'test/unit/file-test.coffee',
+    'test/unit/resize-filter-test.coffee',
+    'test/unit/crop-filter-test.coffee',
+    'test/unit/image-meta-test.coffee',
+    'test/functional/serve-file-test.coffee',
+    'test/functional/upload-file-test.coffee',
+    'test/functional/image-upload-test.coffee',
+    'test/functional/video-upload-test.coffee',
+    'test/functional/audio-upload-test.coffee',
+    'test/functional/delete-file-test.coffee',
+    'test/functional/registry-test.coffee',
+    'test/functional/slave-test.coffee'
   ],
   null,
   ()->
