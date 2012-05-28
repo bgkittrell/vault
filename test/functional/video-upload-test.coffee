@@ -7,9 +7,9 @@ hash = require '../../util/hash'
 
 Config = require '../../config'
 Profile = require '../../models/profile'
-Zencoder = require '../../models/zencoder'
+VideoTranscoder = require '../../models/video-transcoder'
 
-Zencoder.prototype.start = (file)->
+VideoTranscoder.prototype.start = (file)->
   console.log "Bypassing Zencoder"
 
 serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')

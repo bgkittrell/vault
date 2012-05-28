@@ -2,6 +2,11 @@ fs = require 'fs-extra'
 gm = require 'gm'
 path = require 'path'
 
+VideoTranscoder = require '../../models/video-transcoder'
+
+VideoTranscoder.prototype.start = (file)->
+  console.log "Bypassing Zencoder"
+
 Config = require '../../config'
 File = require '../../models/file'
 
@@ -56,11 +61,6 @@ module.exports =
   'Static Methods': (test)=>
     id = 'af9ahewf08hwfhaf'
     test.equal File.directory(id), path.join(Config.mediaDir, 'af', '9a', id)
-    test.equal File.extension('file.txt'), 'txt'
-    test.equal File.extension('file.original.txt'), 'txt'
-    test.equal File.defaultProfile('file.original.txt'), 'default'
-    test.equal File.defaultProfile('waves.mov'), 'video'
-    test.equal File.defaultProfile('han.jpg'), 'image'
     test.done()
   'Video Suite':
     'Set Up': (test)->

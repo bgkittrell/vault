@@ -40,10 +40,9 @@ class File
   prefix: ()->
     return @originalName.split('.')[0]
   extension: (format)->
-    if format = @profile().formats[format]
-      if transcoder = format.transcoder
-        return transcoder.settings.format
-    return File.extension(@originalName)
+    if ext = @profile().extension(format)
+      return ext
+    return array(@originalName.split('.')).last()
   join: (paths)->
     path.join @directory(), paths
   
@@ -92,9 +91,6 @@ class File
     second = id.substring(2,4)
 
     path.join(Config.mediaDir, first, second, id)
-  @extension: (name)->
-    parts = name.split('.')
-    return parts[parts.length-1]
   @create: (path, name, profile, callback) ->
     id = uuid.v4()
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
@@ -103,39 +99,17 @@ class File
 
     mkdirp.sync(file.directory())
     fs.rename path, file.path(), ()->
-      file.set profile: profile || File.defaultProfile(name), ->
+      file.set profile: profile || Profile.default(name), ->
         console.log "Profile: " + file.profile().name
-        File.meta file, callback
+        file.profile().metaFilter file, callback
+        file.profile().transcode file
 
-    File.transcoder file
   @fetch: (id, format, callback) ->
     file = new File(id)
-    File.filter file, format, callback
+    file.profile().filter file, format, callback
 
   @delete: (id, callback)->
     File.fetch id, 'original', (file)->
       fs.rename file.path(), path.join(Config.deleteDir, id), callback
-  @defaultProfile: (filename)->
-    for name, profile of Config.profiles
-      if profile.extensions and File.extension(filename) in profile.extensions
-        return name
-    'default'
-
-  @transcoder: (file, callback)->
-    for format in file.profile().formats
-      if transcoder = format.transcoder
-        transcoder.start file
-  @meta: (file, callback)->
-    if meta = file.profile().metaFilter
-      meta.filter file, ->
-        callback(file)
-    else
-      callback(file)
-  @filter: (file, format, callback)->
-    if format && filter = file.profile().filter(format)
-      filter.filter file, ->
-        callback(file)
-    else
-      callback(file)
 
 module.exports = File

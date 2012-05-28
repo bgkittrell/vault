@@ -48,7 +48,7 @@ class FileController
 
     File.fetch id, format, (file)=>
       if transcoder = file.profile().transcoder(format)
-        transcoder.finish file, notification, ->
+        transcoder.finish file, notification, format, ->
           res.end JSON.stringify(file.json())
       else
         res.end new Error("No transcoder")

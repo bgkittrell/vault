@@ -4,12 +4,17 @@ class Hash
     Object.keys(@hash)
   firstKey: ()->
     @keys()[0]
+  first: ()->
+    @hash[@firstKey()]
   filter: (callback)=>
     hash = {}
     for key, value of @hash
       if callback(key, value)
         hash[key] = value
     return hash
+  merge: (override) ->
+    for key, value of override
+      @hash[key] = value
   clone: ->
     @_clone(@hash)
   _clone: (obj)->

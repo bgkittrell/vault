@@ -38,14 +38,18 @@ module.exports =
               test.ok data.length > 1, 'Returned file is empty'
               test.equal response.statusCode, 200
 
-              gm("/tmp/#{name}#{file.id}").size (err, value)->
-                dims = format.filter.settings
-                if dims.w
-                  test.equal dims.w, value.width
-                else if dims.h
-                  test.equal dims.h, value.height
+              count++
+              if format.filter
+                gm("/tmp/#{name}#{file.id}").size (err, value)->
+                  dims = hash(format.filter).first()
+                  if dims.w
+                    test.equal dims.w, value.width
+                  else if dims.h
+                    test.equal dims.h, value.height
 
-                count++
+                  if count == keyCount
+                    test.done()
+              else
                 if count == keyCount
                   test.done()
           ).on('fail', (error)->
