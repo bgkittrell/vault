@@ -52,9 +52,7 @@ class File
     value.toString().split('.')[0] if value
   set: (pair, cb)->
     key = hash(pair).firstKey()
-    console.log key
     name = "#{pair[key]}.#{key}"
-    console.log name
     @contents.push(name) unless name in @contents
 
     touch @join(name), cb
@@ -82,6 +80,9 @@ class File
   profile: ->
     p = @get ".profile$"
     new Profile(p, Config.profiles[p])
+  meta: ->
+    console.log @contents
+    p for p in @contents when p.match /(status|size|duration)$/
 
   # Static
   @directory: (id)->
@@ -91,18 +92,24 @@ class File
     second = id.substring(2,4)
 
     path.join(Config.mediaDir, first, second, id)
-  @create: (path, name, profile, callback) ->
-    id = uuid.v4()
+  @create: (args..., callback) ->
+    filePath = args[0]
+    name = args[1]
+    profile = args[2]
+    id = args[3]
+    console.log "Creating with id: #{id}"
+
+    id ||= uuid.v4()
+    console.log "Still creating with id: #{id}"
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
 
     file = new File(id, originalName)
 
     mkdirp.sync(file.directory())
-    fs.rename path, file.path(), ()->
+    fs.rename filePath, file.path(), ()->
       file.set profile: profile || Profile.default(name), ->
         console.log "Profile: " + file.profile().name
         file.profile().metaFilter file, callback
-        file.profile().transcode file
 
   @fetch: (id, format, callback) ->
     file = new File(id)

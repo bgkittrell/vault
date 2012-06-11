@@ -1,14 +1,34 @@
 fs = require 'fs'
 express = require 'express'
+request = require 'request'
+aparser = require 'aparser'
 
 Config = require './config'
+Registry = require './models/registry'
 
 RegistryController = require './controllers/registry'
-registryController = new RegistryController()
 FileController = require './controllers/file'
-fileController = new FileController()
+
+aparser.on '--port', (arg, index)->
+  console.log "Overridding default port: #{arg}"
+  Config.serverPort = arg
+
+aparser.on '--media-dir', (arg, index)->
+  console.log "Overridding default media direcory: #{arg}"
+  Config.mediaDir = arg
+
+aparser.on '--tmp-dir', (arg, index)->
+  console.log "Overridding default tmp direcory: #{arg}"
+  Config.tmpDir = arg
+
+aparser.on '--master-url', (arg, index)->
+  console.log "Overridding default master url"
+  Config.masterUrl = arg
+
+aparser.parse(process.argv)
 
 fs.mkdir(Config.mediaDir)
+fs.mkdir(Config.tmpDir)
 fs.mkdir(Config.deleteDir)
 
 port = Config.serverPort
@@ -45,6 +65,24 @@ app.param 'fileId', (req, res, next, fileId)->
     res.send(404)
     return next("#{fileId} not found")
   next()
+
+
+if Config.masterUrl
+  console.log "Initializing registry as slave: URL %s", Config.serverUrl()
+  data = slaveUrl: Config.serverUrl()
+  request.post
+    url: Config.masterUrl + 'registry', json: data, (err,response,body)=>
+      if response.statusCode == 200
+        app.registry = new Registry(body.master, body.slaves, body.writeable)
+        console.log "Successfully registered with master: URL %s", Config.masterUrl
+      else
+        console.error "Couldn't register with master: URL %s", Config.masterUrl
+else
+  console.log "Initializing registry as master: URL %s", Config.serverUrl()
+  app.registry = new Registry(Config.serverUrl())
+
+registryController = new RegistryController(app)
+fileController = new FileController(app)
 
 app.get '/registry', registryController.get
 app.post '/registry', registryController.add

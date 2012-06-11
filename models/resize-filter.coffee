@@ -7,7 +7,6 @@ class ResizeFilter
     if n not in file.contents
       path = if @settings.file then file.join(@settings.file) else file.path()
       gm(path).resize(@settings.w, @settings.h).write file.path(@format), (error)->
-        throw new Error(error) if error
         file.refresh()
         cb(file)
     else

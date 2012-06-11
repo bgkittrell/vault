@@ -12,7 +12,8 @@
     "restler": "git://github.com/bgkittrell/restler.git",
     "zencoder": "",
     "request": "",
-    "mime": "~1.2.5"
+    "mime": "~1.2.5",
+    "aparser": "0.0.2"
   },
   "scripts": {
     "test": "make test"

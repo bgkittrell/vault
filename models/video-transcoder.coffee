@@ -17,7 +17,6 @@ class VideoTranscoder
         ]
         thumbnails:
           label: 'poster'
-      console.log options
       outputs.push options
 
     Zencoder::api_key = Config.zencoderKey
@@ -25,8 +24,10 @@ class VideoTranscoder
       input: Config.serverUrl() + file.id
       outputs: outputs
 
+    console.log "Sending job request #{Config.serverUrl() + file.id}"
+    console.log outputs
+
   finish: (file, notification, format,  callback)=>
-    console.log "Transcoder Format: %s", format
     request(notification.output.url, (err)=>
       throw new Error(err) if err
       unless file.get('poster') or notification.output.state != 'finished' or !notification.output.thumbnails

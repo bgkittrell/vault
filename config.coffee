@@ -2,7 +2,7 @@ Config =
   mediaDir: '/tmp/media'
   tmpDir: '/tmp/'
   deleteDir: '/tmp/delete'
-  serverHost: 'localhost'
+  serverHost: '98.156.53.253'
   serverPort: 7000
   serverProtocol: 'http'
   serverUrl: ->

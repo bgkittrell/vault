@@ -7,7 +7,6 @@ class CropFilter
     if n not in file.contents
       path = if @settings.file then file.join(@settings.file) else file.path()
       gm(path).thumb @settings.w, @settings.h, file.path(@format), @settings.quality || 100, (error)->
-        throw new Error(error) if error
         file.refresh()
         cb(file)
     else

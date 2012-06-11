@@ -86,6 +86,7 @@ module.exports =
       test.equals @file.get('duration'), 1000
       test.deepEqual @file.values('size'), [480, 360]
       test.equals @file.get('status'), 'finished'
+      test.deepEqual @file.meta(), [ '1000.duration', '480x360.size', 'finished.status' ]
       test.done()
     'JSON': (test)=>
       json = @file.json()
