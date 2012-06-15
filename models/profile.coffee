@@ -28,9 +28,6 @@ class Profile
       callback(file)
   filter: (file, formatName, callback)->
     format = @formats[formatName]
-    if format
-      console.log "Getting Filter for Format: %s", formatName
-      console.log util.inspect(format.filter)
     if format and format.filter
       filter = @_resolveFilter(hash(format.filter).firstKey(), formatName, hash(format.filter).first())
       filter.filter file, ->
@@ -50,11 +47,8 @@ class Profile
         return name
     'default'
   _resolveFilter: (filterName, format, settings)->
-    console.log "Filter Name: " +filterName
     filterPath = filterName.replace(/(.)([A-Z])/, '$1-$2').toLowerCase()
-    console.log "Filter Path: " +filterPath
     filterClass = require "../models/#{filterPath}"
-    console.log "Filter Class: " +filterClass
     new filterClass(format, settings)
 
 module.exports = Profile

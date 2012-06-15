@@ -39,6 +39,8 @@ Config =
             quality: 5
             audio_quality: 5
             speed: 5
+            thumbnails:
+              label: 'poster'
       'thumb':
         filter:
           'CropFilter':

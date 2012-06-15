@@ -72,15 +72,23 @@ module.exports =
       ['./test/data/waves.mov'],
       success: (files)=>
         findFile = ->
-          contents = fs.readdirSync(File.directory(files[0].id))
-          path = File.directory(files[0].id).replace /media/, 'media2'
+          file = files[0]
+          contents = fs.readdirSync(File.directory(file.id))
+          path = File.directory(file.id).replace /media/, 'media2'
           console.log "Comparing contents of #{path}"
-          fs.readdir path, (slaveContents)=>
-            if contents is slaveContents
-              test.done()
-            else
-              console.log "File not found, will try again in 3 secs"
-              setTimeout findFile, 3000
+          File.fetch file.id, (f)=>
+            fs.readdir path, (err, slaveContents)=>
+              console.log "Slave contents"
+              console.log slaveContents
+              console.log "Contents"
+              console.log contents
+              console.log "Status: %s", f.status()
+              if f.status() == 'finished' && slaveContents && contents.length > 7 and contents.length is slaveContents.length
+                test.deepEqual contents, slaveContents
+                test.done()
+              else
+                console.log "File not found, will try again in 3 secs"
+                setTimeout findFile, 3000
         findFile()
 
   testReset: (test)->

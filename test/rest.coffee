@@ -8,11 +8,9 @@ class Rest
     ).on('fail', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     ).on('error', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     )
   @post: (url, params, callbacks)->
     rest.post(url, data: params).on('success', (data, response)->
@@ -20,11 +18,9 @@ class Rest
     ).on('fail', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     ).on('error', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     )
   @upload: (url, files, post = {}, callbacks)->
     unless callbacks
@@ -43,11 +39,9 @@ class Rest
     ).on('fail', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     ).on('error', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     )
   @postJson: (url, json, callbacks)->
     data = []
@@ -57,11 +51,9 @@ class Rest
     ).on('fail', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     ).on('error', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     )
   @delete: (url, callbacks)->
     rest.del(url).on('success', (data, response)->
@@ -69,10 +61,8 @@ class Rest
     ).on('fail', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     ).on('error', (error)->
       console.error error
       callbacks.failure() if callbacks.failure
-      throw new Error(error)
     )
  module.exports = Rest

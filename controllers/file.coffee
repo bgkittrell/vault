@@ -15,16 +15,20 @@ class FileController
     format = req.params.format
 
     File.fetch id, format, (file)=>
-      fs.stat file.path(format), (err, stat)=>
-        if err
-          res.send(404)
-        else
-          res.writeHead 200,
-            'Content-Type': mime.lookup(file.filename(format)),
-            'Content-Length': stat.size
-          
-          read = fs.createReadStream file.path(format)
-          util.pump read, res
+      if file
+        fs.stat file.path(format), (err, stat)=>
+          if err
+            res.send(404)
+          else
+            res.writeHead 200,
+              'Content-Type': mime.lookup(file.filename(format)),
+              'Content-Length': stat.size
+            
+            read = fs.createReadStream file.path(format)
+            util.pump read, res
+      else
+        res.status = 404
+        res.end()
   upload: (req, res, next) =>
     created = []
 
@@ -40,20 +44,13 @@ class FileController
             Synchronizer.sync file, @app.registry.slaves
   download: (req, res, next) =>
     json = req.body
-    console.log json
 
     filePath = path.join(Config.tmpDir, json.filename)
-    download json.url, filePath, ->
-      if json.format && json.id
-        File.fetch json.id, null, (file)->
-          fs.rename filePath, file.path(json.format), ()->
-            res.end JSON.stringify(file.json())
-      else
-        File.create filePath, json.filename, json.profile, json.id, (file)=>
-          res.end JSON.stringify(file.json())
-          unless json.id
-            file.profile().transcode file
-            Synchronizer.sync file, @app.registry.slaves
+    download json.url, filePath, =>
+      File.create filePath, json.filename, json.profile, (file)=>
+        res.end JSON.stringify(file.json())
+        file.profile().transcode file
+        Synchronizer.sync file, @app.registry.slaves
   finish: (req, res, next) =>
     id = req.params.fileId
     format = req.params.format
@@ -61,18 +58,26 @@ class FileController
     notification = req.body
 
     File.fetch id, format, (file)=>
-      if transcoder = file.profile().transcoder(format)
-        transcoder.finish file, notification, format, =>
-          res.end JSON.stringify(file.json())
-          Synchronizer.sync file, @app.registry.slaves, format
+      if file
+        if transcoder = file.profile().transcoder(format)
+          transcoder.finish file, notification, format, =>
+            res.end JSON.stringify(file.json())
+            Synchronizer.sync file, @app.registry.slaves
+        else
+          res.end new Error("No transcoder")
       else
-        res.end new Error("No transcoder")
+        res.status = 404
+        res.end()
   status: (req, res, next) =>
     id = req.params.fileId
     format = req.params.format
 
     File.fetch id, format, (file)=>
-      res.send(file.json())
+      if file
+        res.send(file.json())
+      else
+        res.status = 404
+        res.end()
   delete: (req, res, next) =>
     id = req.params.fileId
 

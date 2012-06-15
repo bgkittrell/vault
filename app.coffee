@@ -8,6 +8,7 @@ Registry = require './models/registry'
 
 RegistryController = require './controllers/registry'
 FileController = require './controllers/file'
+SyncController = require './controllers/sync'
 
 aparser.on '--port', (arg, index)->
   console.log "Overridding default port: #{arg}"
@@ -83,10 +84,14 @@ else
 
 registryController = new RegistryController(app)
 fileController = new FileController(app)
+syncController = new SyncController(app)
 
 app.get '/registry', registryController.get
 app.post '/registry', registryController.add
 app.put '/registry', registryController.sync
+
+app.post '/sync', syncController.sync
+app.get '/sync/:fileId/:filename', syncController.file
 
 app.get '/:fileId.status', fileController.status
 app.get '/:format/:fileId', fileController.serve

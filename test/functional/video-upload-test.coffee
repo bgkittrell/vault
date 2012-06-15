@@ -31,6 +31,15 @@ zencoderResponse =  (thumbUrl, videoUrl)->
       "duration_in_ms": 5000,
       "frame_rate": 25.0
 
+failedZencoderResponse =  (thumbUrl, videoUrl)->
+  "output":
+      "state": "failed",
+      "height": 640,
+      "width": 480,
+      "format": "mpeg4",
+      "url": videoUrl,
+      "duration_in_ms": 5000,
+      "frame_rate": 25.0
 
 module.exports =
   testVideoUpload: (test)->
@@ -89,5 +98,38 @@ module.exports =
                   success: (data)=>
                     status = data
                     test.equal status.status, 'finished'
+                    console.log data
+                    test.equal data.formats[0].status, 'finished'
+                    test.done()
+
+  testFailedStatus: (test)->
+    filename = './test/data/waves.mov'
+    image = './test/data/han.jpg'
+    start = new Date().getTime()
+
+    rest.upload serverUrl,
+      [filename, filename],
+      { profile: 'stupeflix' },
+      success: (files)=>
+        end = new Date().getTime()
+        console.log "Finished in #{end - start} millis"
+        video = files[0]
+        image = files[1]
+        post = failedZencoderResponse(serverUrl + image.id, serverUrl + video.id)
+        count = 0
+        profile = new Profile('stupeflix', Config.profiles.stupeflix)
+        formats = hash(profile.formats).filter((k,v)-> v.transcoder)
+        for name, format of formats
+          rest.postJson serverUrl + name + '/' + video.id, post,
+            success: (data, response)=>
+              test.equal response.statusCode, 200
+              count++
+              if count == hash(formats).keys().length
+                rest.get serverUrl + video.id + '.status',
+                  success: (data)=>
+                    status = data
+                    test.equal status.status, 'failed'
+                    console.log data
+                    test.equal data.formats[0].status, 'failed'
                     test.done()
 

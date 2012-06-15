@@ -1,6 +1,7 @@
 fs = require 'fs-extra'
 gm = require 'gm'
 path = require 'path'
+hash = require '../../util/hash'
 
 VideoTranscoder = require '../../models/video-transcoder'
 
@@ -71,7 +72,6 @@ module.exports =
         @file = _file
         test.ok @file, "File wasn't created"
         test.ok @file.id.match /[\w-]{36}/, "File id is invalid"
-        console.log @file.profile()
         test.equal @file.profile().name, 'stupeflix'
         test.ok @file instanceof File, "File should be an instance of File"
         test.done()
@@ -94,6 +94,21 @@ module.exports =
       test.equals json.width, 480
       test.equals json.height, 360
       test.equals json.status, 'finished'
+      test.equals hash(json.formats).keys().length, 1
+      test.deepEqual json,
+        id: @file.id,
+        duration: '1000',
+        width: '480',
+        height: '360',
+        status: 'finished',
+        filename: 'waves.original.mov',
+        profile: 'stupeflix',
+        formats:
+         [
+           {
+             format: 'archive'
+           }
+         ]
       test.done()
   'Image Suite':
     'Set Up': (test)->

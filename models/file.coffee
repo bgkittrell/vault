@@ -50,21 +50,27 @@ class File
   get: (name)->
     value = array(@contents).match ///#{name}///
     value.toString().split('.')[0] if value
+  touch: (str, cb)->
+    @contents.push(str) unless str in @contents
+
+    touch @join(str), cb
   set: (pair, cb)->
     key = hash(pair).firstKey()
     name = "#{pair[key]}.#{key}"
-    @contents.push(name) unless name in @contents
 
-    touch @join(name), cb
+    @touch name, cb
   refresh: ()->
     @contents = fs.readdirSync(@directory())
   values: (name, delim = 'x')->
     value = @get(name)
     value.split(delim) if value
-  status: ->
-    for name, format of @profile().formats
-      return 'failed' if @get("failed.#{format}.status$")
-    return @get(".status$")
+  status: (formatName = null)->
+    if formatName
+      @get("#{formatName}.status$")
+    else
+      for name, format of @profile().formats
+        return 'failed' if @get("failed.#{name}.status$")
+      return @get(".status$")
   json: ->
     size = @values('size')
     duration = @get('duration')
@@ -76,13 +82,28 @@ class File
       height: size[1] if size
       status: status
       filename: @filename()
+      profile: @profile().name
+      formats: hash(@profile().formats).keys().map (format)=>
+        status = @get("#{format}.status")
+        duration = @get("#{format}.duration")
+        size = @get("#{format}.size")
+        formatJson = {
+          format: format
+        }
+        formatJson['status'] = status if status
+        formatJson['duration'] = duration if duration
+        formatJson['width'] = size.split('x')[0] if size
+        formatJson['height'] = size.split('x')[1] if size
+        return formatJson
     }
   profile: ->
     p = @get ".profile$"
     new Profile(p, Config.profiles[p])
-  meta: ->
-    console.log @contents
-    p for p in @contents when p.match /(status|size|duration)$/
+  meta: (data)->
+    if data
+      @touch(p) for p in data
+    else
+      p for p in @contents when p.match /(status|size|duration)$/
 
   # Static
   @directory: (id)->
@@ -97,10 +118,8 @@ class File
     name = args[1]
     profile = args[2]
     id = args[3]
-    console.log "Creating with id: #{id}"
 
     id ||= uuid.v4()
-    console.log "Still creating with id: #{id}"
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
 
     file = new File(id, originalName)
@@ -108,12 +127,21 @@ class File
     mkdirp.sync(file.directory())
     fs.rename filePath, file.path(), ()->
       file.set profile: profile || Profile.default(name), ->
-        console.log "Profile: " + file.profile().name
         file.profile().metaFilter file, callback
 
-  @fetch: (id, format, callback) ->
-    file = new File(id)
-    file.profile().filter file, format, callback
+  @fetch: (args..., callback) ->
+    id = args[0]
+    format = args[1]
+
+    try
+      file = new File(id)
+      if file.originalName
+        file.profile().filter file, format, callback
+      else
+        callback null
+    catch error
+      console.error error
+      callback null
 
   @delete: (id, callback)->
     File.fetch id, 'original', (file)->
