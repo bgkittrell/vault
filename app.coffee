@@ -82,6 +82,13 @@ else
   console.log "Initializing registry as master: URL %s", Config.serverUrl()
   app.registry = new Registry(Config.serverUrl())
 
+systemAuth = (req, res, next)->
+  console.log req.headers
+  if req.headers['x-vault-key'] == Config.systemKey
+    next()
+  else
+    res.send(403)
+
 registryController = new RegistryController(app)
 fileController = new FileController(app)
 syncController = new SyncController(app)
@@ -90,10 +97,11 @@ app.get '/registry', registryController.get
 app.post '/registry', registryController.add
 app.put '/registry', registryController.sync
 
-app.post '/sync', syncController.sync
-app.get '/sync/:fileId/:filename', syncController.file
+app.post '/sync', systemAuth, syncController.sync
+app.get '/sync/:fileId/:filename', systemAuth, syncController.file
 
 app.get '/:fileId.status', fileController.status
+app.get '/:format/:fileId/:options', fileController.serve
 app.get '/:format/:fileId', fileController.serve
 app.get '/:fileId', fileController.serve
 app.post '/:format/:fileId', fileController.finish

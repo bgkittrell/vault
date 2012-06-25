@@ -2,7 +2,7 @@ gm = require 'gm'
 
 class ResizeFilter
   constructor: (@format, @settings)->
-  filter: (file, cb)->
+  filter: ([file, options]..., cb)->
     n = file.filename(@format)
     if n not in file.contents
       path = if @settings.file then file.join(@settings.file) else file.path()

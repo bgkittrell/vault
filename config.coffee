@@ -5,6 +5,7 @@ Config =
   serverHost: '98.156.53.253'
   serverPort: 7000
   serverProtocol: 'http'
+  systemKey: 'Bh8XJhRVED4zLgWQyW'
   serverUrl: ->
     "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
   zencoderKey: '1e8ef8591b769f1a4b153c2819b7e6e2'

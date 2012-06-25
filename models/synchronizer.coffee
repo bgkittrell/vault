@@ -7,7 +7,7 @@ class Synchronizer
     for url in urls
       console.log "Syncing file #{file.filename()} to #{url}"
 
-      request method: 'POST', url: url + 'sync', json: file.json(), (err,response,body)=>
+      request headers: {'X-Vault-Key': Config.systemKey }, method: 'POST', url: url + 'sync', json: file.json(), (err,response,body)=>
         if err
           console.error err
 

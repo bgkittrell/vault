@@ -17,6 +17,8 @@ class Hash
       @hash[key] = value
   clone: ->
     @_clone(@hash)
+  values: () ->
+    Object.keys(@hash).map (key)=> @hash[key]
   _clone: (obj)->
     if not obj? or typeof obj isnt 'object'
       return obj

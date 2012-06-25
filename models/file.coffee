@@ -132,11 +132,12 @@ class File
   @fetch: (args..., callback) ->
     id = args[0]
     format = args[1]
+    options = args[2]
 
     try
       file = new File(id)
       if file.originalName
-        file.profile().filter file, format, callback
+        file.profile().filter file, format, options, callback
       else
         callback null
     catch error

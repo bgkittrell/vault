@@ -3,6 +3,7 @@ fs = require 'fs'
 util = require 'util'
 path = require 'path'
 download = require '../util/download'
+json = require '../util/json'
 
 File = require '../models/file'
 Config = require '../config'
@@ -13,18 +14,23 @@ class FileController
   serve: (req, res, next) =>
     id = req.params.fileId
     format = req.params.format
+    options = json.parse(req.params.options) if req.params.options
+    console.log options
 
-    File.fetch id, format, (file)=>
+    File.fetch id, format, options, (file, filePath)=>
+      filePath ||= file.path(format)
+      console.log "Serving: %s", filePath
       if file
-        fs.stat file.path(format), (err, stat)=>
+        fs.stat filePath, (err, stat)=>
           if err
+            console.error err
             res.send(404)
           else
             res.writeHead 200,
-              'Content-Type': mime.lookup(file.filename(format)),
+              'Content-Type': mime.lookup(filePath),
               'Content-Length': stat.size
             
-            read = fs.createReadStream file.path(format)
+            read = fs.createReadStream filePath
             util.pump read, res
       else
         res.status = 404
@@ -43,11 +49,11 @@ class FileController
             file.profile().transcode file
             Synchronizer.sync file, @app.registry.slaves
   download: (req, res, next) =>
-    json = req.body
+    params = req.body
 
-    filePath = path.join(Config.tmpDir, json.filename)
-    download json.url, filePath, =>
-      File.create filePath, json.filename, json.profile, (file)=>
+    filePath = path.join(Config.tmpDir, params.filename)
+    download params.url, filePath, =>
+      File.create filePath, params.filename, params.profile, (file)=>
         res.end JSON.stringify(file.json())
         file.profile().transcode file
         Synchronizer.sync file, @app.registry.slaves

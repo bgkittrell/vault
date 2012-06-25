@@ -12,6 +12,7 @@ reporter.run [
     'test/functional/video-upload-test.coffee',
     'test/functional/audio-upload-test.coffee',
     'test/functional/delete-file-test.coffee',
+    'test/functional/sync-test.coffee',
     'test/functional/registry-test.coffee'
   ],
   null,

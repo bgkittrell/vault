@@ -26,12 +26,11 @@ class Profile
         callback(file)
     else
       callback(file)
-  filter: (file, formatName, callback)->
+  filter: ([file, formatName, options]..., callback)->
     format = @formats[formatName]
     if format and format.filter
       filter = @_resolveFilter(hash(format.filter).firstKey(), formatName, hash(format.filter).first())
-      filter.filter file, ->
-        callback(file)
+      filter.filter file, options, callback
     else
       callback(file)
   extension: (formatName)->

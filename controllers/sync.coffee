@@ -14,6 +14,7 @@ Profile = require '../models/profile'
 class SyncController
   constructor: (@app)->
   sync: (req, res, next)->
+    console.log("Sync sync")
     json = req.body
 
     File.fetch json.id, (file)->
@@ -28,7 +29,7 @@ class SyncController
               filePath = path.join(Config.tmpDir, file.id + file.filename(name))
 
               queue.push (done)->
-                request(Config.masterUrl + "#{name}/#{file.id}", (err, response, body)->
+                request(Config.masterUrl + "#{name}/#{file.id}", headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)->
                   console.error err if err
                   fs.rename filePath, to.path(name), done
                 ).pipe(fs.createWriteStream(filePath))
@@ -39,7 +40,7 @@ class SyncController
                 thumbPath = path.join(Config.tmpDir, json.id + thumbnails.label)
 
                 queue.push (done)->
-                  request(Config.masterUrl + "sync/#{json.id}/#{thumbnails.label}.png", (err, response, body)->
+                  request(Config.masterUrl + "sync/#{json.id}/#{thumbnails.label}.png",  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)->
                     console.error err if err
                     fs.rename thumbPath, to.join("#{thumbnails.label}.png"), done
                   ).pipe(fs.createWriteStream(thumbPath))
@@ -58,13 +59,14 @@ class SyncController
         syncFile json, file
       else
         originalPath = path.join(Config.tmpDir, json.filename)
-        request(Config.masterUrl + json.id, (err, response, body)->
+        request(Config.masterUrl + json.id,  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)->
           File.create originalPath, json.filename.replace(/original\./, ''), json.profile, json.id, (file)=>
             syncFile json, file
         ).pipe(fs.createWriteStream(originalPath))
       res.end()
 
   file: (req, res, next)->
+    console.log("Sync sync")
     id = req.params.fileId
     filename = req.params.filename
 
