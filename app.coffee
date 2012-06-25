@@ -83,7 +83,6 @@ else
   app.registry = new Registry(Config.serverUrl())
 
 systemAuth = (req, res, next)->
-  console.log req.headers
   if req.headers['x-vault-key'] == Config.systemKey
     next()
   else
@@ -93,9 +92,9 @@ registryController = new RegistryController(app)
 fileController = new FileController(app)
 syncController = new SyncController(app)
 
-app.get '/registry', registryController.get
-app.post '/registry', registryController.add
-app.put '/registry', registryController.sync
+app.get '/registry', systemAuth, registryController.get
+app.post '/registry', systemAuth, registryController.add
+app.put '/registry', systemAuth, registryController.sync
 
 app.post '/sync', systemAuth, syncController.sync
 app.get '/sync/:fileId/:filename', systemAuth, syncController.file
