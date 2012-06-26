@@ -13,8 +13,8 @@ File = require '../../models/file'
 
 standardFileTests = (filename)->
   'Set Up': (test)->
-    fs.copyFileSync "./test/data/#{filename}", "/tmp/#{filename}"
-    test.done()
+    fs.copy "./test/data/#{filename}", "/tmp/#{filename}", ()->
+      test.done()
   'Create File': (test)=>
     File.create "/tmp/#{filename}", filename, null, (_file)=>
       @file = _file
@@ -65,8 +65,8 @@ module.exports =
     test.done()
   'Video Suite':
     'Set Up': (test)->
-      fs.copyFileSync "./test/data/waves.mov", "/tmp/waves.mov"
-      test.done()
+      fs.copy "./test/data/waves.mov", "/tmp/waves.mov", ()->
+        test.done()
     'Create File With Profile': (test)=>
       File.create '/tmp/waves.mov', 'waves.mov', 'stupeflix', (_file)=>
         @file = _file
@@ -112,8 +112,8 @@ module.exports =
       test.done()
   'Image Suite':
     'Set Up': (test)->
-      fs.copyFileSync "./test/data/han.jpg", "/tmp/han.jpg"
-      test.done()
+      fs.copy "./test/data/han.jpg", "/tmp/han.jpg", ()->
+        test.done()
     'Create File With Profile': (test)=>
       File.create '/tmp/han.jpg', 'han.jpg', null, (_file)=>
         @file = _file

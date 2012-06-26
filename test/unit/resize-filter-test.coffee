@@ -1,15 +1,15 @@
-fs = require 'fs'
+fs = require 'fs-extra'
 gm = require 'gm'
 ResizeFilter = require '../../models/resize-filter'
 File = require '../../models/file'
 
 module.exports =
   'Set Up': (test)=>
-    fs.copyFileSync "./test/data/han.jpg", "/tmp/han.jpg"
-    File.create "/tmp/han.jpg", "han.jpg", null, (_file)=>
-      @file = _file
-      test.ok @file, "File wasn't created"
-      test.done()
+    fs.copy "./test/data/han.jpg", "/tmp/han.jpg", ()=>
+      File.create "/tmp/han.jpg", "han.jpg", null, (_file)=>
+        @file = _file
+        test.ok @file, "File wasn't created"
+        test.done()
   'Resize Image': (test)=>
     resize = new ResizeFilter 'medium', w: 200
       

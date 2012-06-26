@@ -9,7 +9,7 @@ hash = require '../../util/hash'
 Config = require '../../config'
 Profile = require '../../models/profile'
 
-serverUrl = 'http://localhost:7000/' #url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
+serverUrl = Config.serverUrl()
 
 uploadFile = (callback)->
   filename = './test/data/han.jpg'

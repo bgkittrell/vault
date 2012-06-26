@@ -2,6 +2,7 @@ fs = require 'fs'
 express = require 'express'
 request = require 'request'
 aparser = require 'aparser'
+http = require 'http'
 
 Config = require './config'
 Registry = require './models/registry'
@@ -34,7 +35,7 @@ fs.mkdir(Config.deleteDir)
 
 port = Config.serverPort
 
-app = module.exports = express.createServer()
+app = express()
 app.use(express.logger())
 
 app.on 'error', (err) ->
@@ -69,10 +70,12 @@ app.param 'fileId', (req, res, next, fileId)->
 
 
 if Config.masterUrl
-  console.log "Initializing registry as slave: URL %s", Config.serverUrl()
+  console.log "Initializing slave %s with master: %s", Config.serverUrl(), Config.masterUrl
   data = slaveUrl: Config.serverUrl()
   request.post
-    url: Config.masterUrl + 'registry', json: data, (err,response,body)=>
+    url: Config.masterUrl + 'registry', json: data, headers: { 'X-Vault-Key': Config.systemKey }, (err,response,body)=>
+      if err
+        throw new Error(err)
       if response.statusCode == 200
         app.registry = new Registry(body.master, body.slaves, body.writeable)
         console.log "Successfully registered with master: URL %s", Config.masterUrl
@@ -111,5 +114,12 @@ app.post '/', (req,res,next)->
     fileController.download(req, res, next)
 app.delete '/:fileId', fileController.delete
 
-app.listen(port)
-console.log("Vault server listening on port %d in %s mode", app.address().port, app.settings.env)
+server = http.createServer(app).listen(port)
+
+app.close = ()->
+  server.close()
+app.address = server.address
+
+module.exports = app
+
+console.log("Vault server listening on port %d in %s mode", port, app.settings.env)

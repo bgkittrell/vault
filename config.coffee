@@ -3,7 +3,7 @@ Config =
   tmpDir: '/tmp/'
   deleteDir: '/tmp/delete'
   serverHost: '98.156.53.253'
-  serverPort: 7000
+  serverPort: 7100
   serverProtocol: 'http'
   systemKey: 'Bh8XJhRVED4zLgWQyW'
   serverUrl: ->

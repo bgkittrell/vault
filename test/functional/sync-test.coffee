@@ -4,7 +4,7 @@ request = require 'request'
 
 Config = require '../../config'
 
-serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
+serverUrl = Config.serverUrl()
 console.log "Testing with URL: %s", serverUrl
 
 module.exports =

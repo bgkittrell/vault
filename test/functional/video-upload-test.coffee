@@ -12,7 +12,7 @@ VideoTranscoder = require '../../models/video-transcoder'
 VideoTranscoder.prototype.start = (file)->
   console.log "Bypassing Zencoder"
 
-serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
+serverUrl = Config.serverUrl()
 
 zencoderResponse =  (thumbUrl, videoUrl)->
   "output":

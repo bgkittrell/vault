@@ -12,9 +12,9 @@ module.exports =
     test.equal Profile.default('han.mov'), 'video'
     test.done()
   'Test Filter': (test)=>
-    fs.copyFileSync "./test/data/han.jpg", "/tmp/han.jpg"
-    File.create "/tmp/han.jpg", "han.jpg", null, (file)=>
-      test.ok file, "File wasn't created"
+    fs.copy "./test/data/han.jpg", "/tmp/han.jpg", ()=>
+      File.create "/tmp/han.jpg", "han.jpg", null, (file)=>
+        test.ok file, "File wasn't created"
 
-      file.profile().filter file, 'thumb', =>
-        test.done()
+        file.profile().filter file, 'thumb', =>
+          test.done()
