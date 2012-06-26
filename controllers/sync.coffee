@@ -8,6 +8,7 @@ util = require 'util'
 async = require 'async'
 
 Config = require '../config'
+Secure = require '../secure'
 File = require '../models/file'
 Profile = require '../models/profile'
 
@@ -30,7 +31,7 @@ class SyncController
 
               queue.push (done)->
                 console.log "Getting format from master"
-                request(Config.masterUrl + "#{name}/#{file.id}", headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)->
+                request(Secure.systemUrl(Config.masterUrl + "#{name}/#{file.id}"), (err, response, body)->
                   console.error err if err
                   fs.rename filePath, to.path(name), done
                 ).pipe(fs.createWriteStream(filePath))
@@ -42,7 +43,7 @@ class SyncController
 
                 queue.push (done)->
                   console.log "Getting thumb from master"
-                  request(Config.masterUrl + "sync/#{json.id}/#{thumbnails.label}.png",  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)->
+                  request(Secure.systemUrl(Config.masterUrl + "sync/#{json.id}/#{thumbnails.label}.png"),  (err, response, body)->
                     console.error err if err
                     fs.rename thumbPath, to.join("#{thumbnails.label}.png"), done
                   ).pipe(fs.createWriteStream(thumbPath))
@@ -62,7 +63,7 @@ class SyncController
       else
         originalPath = path.join(Config.tmpDir, json.filename)
         console.log "Getting original from master"
-        request(Config.masterUrl + json.id,  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)->
+        request(Secure.systemUrl(Config.masterUrl + json.id),  (err, response, body)->
           File.create originalPath, json.filename.replace(/original\./, ''), json.profile, json.id, (file)=>
             syncFile json, file
         ).pipe(fs.createWriteStream(originalPath))

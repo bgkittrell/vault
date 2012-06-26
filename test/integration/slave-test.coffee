@@ -4,6 +4,7 @@ rest = require '../rest'
 exec  = require('child_process').exec
 File = require '../../models/file'
 Config = require '../../config'
+Secure = require '../../secure'
 
 server1 = exec 'coffee app.coffee'
 serverUrl1 = "http://#{Config.serverHost}:#{Config.serverPort}/"
@@ -34,7 +35,7 @@ module.exports =
   testAutoRegister: (test)->
     # Wait for auto register
     setTimeout ->
-      request.get serverUrl1 + 'registry',  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)=>
+      request.get Secure.systemUrl(serverUrl1 + 'registry'),  (err, response, body)=>
         test.ifError err
         console.log body
         registry = JSON.parse body
@@ -47,7 +48,7 @@ module.exports =
     , 5000
 
   testRegistrySyncSlave1: (test)->
-    request.get serverUrl2 + 'registry',  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)=>
+    request.get Secure.systemUrl(serverUrl2 + 'registry'),  (err, response, body)=>
       test.ifError err
       registry = JSON.parse body
       test.equal response.headers['content-type'], 'application/json'
@@ -58,7 +59,7 @@ module.exports =
       test.done()
 
   testRegistrySyncSlave2: (test)->
-    request.get serverUrl3 + 'registry',  headers: {'X-Vault-Key': Config.systemKey }, (err, response, body)=>
+    request.get Secure.systemUrl(serverUrl3 + 'registry'),  (err, response, body)=>
       test.ifError err
       registry = JSON.parse body
       test.equal response.headers['content-type'], 'application/json'
@@ -68,7 +69,7 @@ module.exports =
       test.ok serverUrl3 in registry.slaves
       test.done()
   testFileSync: (test)->
-    rest.upload serverUrl1,
+    rest.upload Secure.systemUrl(serverUrl1),
       ['./test/data/waves.mov'],
       success: (files)=>
         findFile = ->
@@ -93,7 +94,7 @@ module.exports =
 
   testReset: (test)->
     console.log "Reset Test"
-    request.put serverUrl1 + 'registry', headers: {'X-Vault-Key': Config.systemKey }, json: { master: masterUrl }, (err, response, registry)=>
+    request.put Secure.systemUrl(serverUrl1 + 'registry'), json: { master: masterUrl }, (err, response, registry)=>
         test.equal response.headers['content-type'], 'application/json'
         test.equal masterUrl, registry.master
         test.equal 0, registry.slaves.length

@@ -5,6 +5,7 @@ aparser = require 'aparser'
 http = require 'http'
 
 Config = require './config'
+Secure = require './secure'
 Registry = require './models/registry'
 
 RegistryController = require './controllers/registry'
@@ -68,12 +69,11 @@ app.param 'fileId', (req, res, next, fileId)->
     return next("#{fileId} not found")
   next()
 
-
 if Config.masterUrl
   console.log "Initializing slave %s with master: %s", Config.serverUrl(), Config.masterUrl
   data = slaveUrl: Config.serverUrl()
   request.post
-    url: Config.masterUrl + 'registry', json: data, headers: { 'X-Vault-Key': Config.systemKey }, (err,response,body)=>
+    url: Secure.systemUrl(Config.masterUrl + 'registry'), json: data, (err,response,body)=>
       if err
         throw new Error(err)
       if response.statusCode == 200
@@ -85,28 +85,23 @@ else
   console.log "Initializing registry as master: URL %s", Config.serverUrl()
   app.registry = new Registry(Config.serverUrl())
 
-systemAuth = (req, res, next)->
-  if req.headers['x-vault-key'] == Config.systemKey
-    next()
-  else
-    res.send(403)
 
 registryController = new RegistryController(app)
 fileController = new FileController(app)
 syncController = new SyncController(app)
 
-app.get '/registry', systemAuth, registryController.get
-app.post '/registry', systemAuth, registryController.add
-app.put '/registry', systemAuth, registryController.sync
+app.get '/registry', Secure.systemAuth, registryController.get
+app.post '/registry', Secure.systemAuth, registryController.add
+app.put '/registry', Secure.systemAuth, registryController.sync
 
-app.post '/sync', systemAuth, syncController.sync
-app.get '/sync/:fileId/:filename', systemAuth, syncController.file
+app.post '/sync', Secure.systemAuth, syncController.sync
+app.get '/sync/:fileId/:filename', Secure.systemAuth, syncController.file
 
-app.get '/:fileId.status', fileController.status
-app.get '/:format/:fileId/:options', fileController.serve
-app.get '/:format/:fileId', fileController.serve
-app.get '/:fileId', fileController.serve
-app.post '/:format/:fileId', fileController.finish
+app.get '/:fileId.status', Secure.readAuth, fileController.status
+app.get '/:format/:fileId/:options', Secure.readAuth, fileController.serve
+app.get '/:format/:fileId', Secure.readAuth, fileController.serve
+app.get '/:fileId',  Secure.readAuth, fileController.serve
+app.post '/:format/:fileId', Secure.readAuth, fileController.finish
 app.post '/', (req,res,next)->
   if req.files
     fileController.upload(req, res, next)
@@ -118,7 +113,8 @@ server = http.createServer(app).listen(port)
 
 app.close = ()->
   server.close()
-app.address = server.address
+app.address = ()->
+  server.address()
 
 module.exports = app
 

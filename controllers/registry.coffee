@@ -2,6 +2,7 @@ request = require 'request'
 
 Registry = require '../models/registry'
 Config = require '../config'
+Secure = require '../secure'
 
 class RegistryController
   constructor: (@app)->
@@ -14,7 +15,7 @@ class RegistryController
     @app.registry.register req.param('slaveUrl')
     for slave in slaves
       console.log "Sending sync request to %s", slave
-      request.put slave + 'registry', json: @app.registry.json(), headers: { 'X-Vault-Key': Config.systemKey }, (err,res,body)=>
+      request.put Secure.systemUrl(slave) + 'registry', json: @app.registry.json(), (err,res,body)=>
         if err
           console.error "Couldn't sync registry with slave: %s errror: %s", slave, err
     res.end(JSON.stringify(@app.registry.json()))

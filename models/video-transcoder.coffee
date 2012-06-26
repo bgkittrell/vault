@@ -14,13 +14,13 @@ class VideoTranscoder
       hash(options).merge
         public: no
         notifications: [
-          Config.serverUrl() + name + '/' + file.id
+          Config.apiUrl() + name + '/' + file.id
         ]
       outputs.push options
 
     Zencoder::api_key = Config.zencoderKey
     Zencoder::Job.create
-      input: Config.serverUrl() + file.id
+      input: Config.apiUrl() + file.id
       outputs: outputs
 
     console.log "Sending job request #{Config.serverUrl() + file.id}"
