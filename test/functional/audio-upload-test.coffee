@@ -6,6 +6,7 @@ fs = require 'fs'
 hash = require '../../util/hash'
 
 Config = require '../../config'
+Secure = require '../../secure'
 Profile = require '../../models/profile'
 VideoTranscoder = require '../../models/video-transcoder'
 
@@ -37,27 +38,24 @@ module.exports =
     image = './test/data/han.jpg'
     start = new Date().getTime()
 
-    rest.upload Config.serverUrl(),
+    rest.upload Secure.systemUrl(),
       [filename,image],
       { profile: 'audio' },
       success: (files)=>
         end = new Date().getTime()
-        console.log "Finished in #{end - start} millis"
         audio = files[0]
         image = files[1]
-        post = zencoderResponse(Config.serverUrl() + image.id, Config.serverUrl() + audio.id)
+        post = zencoderResponse(Secure.apiUrl() + image.id, Secure.apiUrl() + audio.id)
         count = 0
         profile = new Profile('video', Config.profiles.audio)
         formats = hash(profile.formats).filter((k,v)-> v.transcoder)
-        console.log formats
         for name, format of formats
-          console.log name
-          rest.postJson Config.serverUrl() + name + '/' + audio.id, post,
+          rest.postJson Secure.systemUrl() + name + '/' + audio.id, post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == hash(formats).keys().length
-                rest.get Config.serverUrl() + audio.id + '.status',
+                rest.get Secure.systemUrl() + audio.id + '.status',
                   success: (data)=>
                     status = data
                     test.equal status.status, 'finished'

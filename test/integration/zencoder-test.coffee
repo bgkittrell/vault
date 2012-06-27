@@ -3,7 +3,9 @@ fs = require 'fs'
 url = require 'url'
 rest = require '../rest'
 
-serverUrl = url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/')
+Secure = require '../../secure'
+
+serverUrl = Secure.systemUrl(url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/'))
 
 module.exports =
   testVideoUpload: (test)->
@@ -15,10 +17,8 @@ module.exports =
         video = files[0]
 
         checkStatus = ->
-          console.log "Checking status of file: %s", video.id
-          rest.get serverUrl + video.id + '.status', 
+          rest.get serverUrl + video.id + '.status',
             success: (status)->
-              console.log "Status: %s", status.status
               if status.status is 'finished'
                 test.ok true
                 test.done()

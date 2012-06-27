@@ -23,9 +23,6 @@ class VideoTranscoder
       input: Config.apiUrl() + file.id
       outputs: outputs
 
-    console.log "Sending job request #{Config.serverUrl() + file.id}"
-    console.log outputs
-
   finish: (file, notification, formatName,  callback)=>
     request(notification.output.url, (err)=>
       setProp = (prop, callback)->

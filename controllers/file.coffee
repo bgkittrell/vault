@@ -15,11 +15,9 @@ class FileController
     id = req.params.fileId
     format = req.params.format
     options = json.parse(req.params.options) if req.params.options
-    console.log options
 
     File.fetch id, format, options, (file, filePath)=>
       filePath ||= file.path(format)
-      console.log "Serving: %s", filePath
       if file
         fs.stat filePath, (err, stat)=>
           if err

@@ -6,16 +6,28 @@ Config = require '../../config'
 Secure = require '../../secure'
 
 module.exports =
-  testGetUnauth: (test)->
+  testGetUnauthenticated: (test)->
     request.get Config.serverUrl() + 'registry', (err, response, body)=>
       test.equal response.statusCode, 401
       test.done()
-  testPostUnauth: (test)->
+  testPostUnauthenticated: (test)->
     request.post Config.serverUrl() + 'registry', (err, response, body)=>
       test.equal response.statusCode, 401
       test.done()
-  testPutUnauth: (test)->
+  testPutUnauthenticated: (test)->
     request.put Config.serverUrl() + 'registry', (err, response, body)=>
+      test.equal response.statusCode, 401
+      test.done()
+  testGetUnauthorized: (test)->
+    request.get Secure.apiUrl() + 'registry', (err, response, body)=>
+      test.equal response.statusCode, 401
+      test.done()
+  testPostUnauthorized: (test)->
+    request.post Secure.apiUrl() + 'registry', (err, response, body)=>
+      test.equal response.statusCode, 401
+      test.done()
+  testPutUnauthorized: (test)->
+    request.put Secure.apiUrl() + 'registry', (err, response, body)=>
       test.equal response.statusCode, 401
       test.done()
 

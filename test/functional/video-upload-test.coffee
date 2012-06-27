@@ -6,13 +6,14 @@ fs = require 'fs'
 hash = require '../../util/hash'
 
 Config = require '../../config'
+Secure = require '../../secure'
 Profile = require '../../models/profile'
 VideoTranscoder = require '../../models/video-transcoder'
 
 VideoTranscoder.prototype.start = (file)->
   console.log "Bypassing Zencoder"
 
-serverUrl = Config.serverUrl()
+serverUrl = Secure.systemUrl()
 
 zencoderResponse =  (thumbUrl, videoUrl)->
   "output":
@@ -58,7 +59,6 @@ module.exports =
         count = 0
         profile = new Profile('video', Config.profiles.video)
         formats = hash(profile.formats).filter((k,v)-> v.transcoder)
-        console.log formats
         for name, format of formats
           rest.postJson serverUrl + name + '/' + video.id, post,
             success: (data, response)=>
@@ -98,7 +98,6 @@ module.exports =
                   success: (data)=>
                     status = data
                     test.equal status.status, 'finished'
-                    console.log data
                     test.equal data.formats[0].status, 'finished'
                     test.done()
 
@@ -129,7 +128,6 @@ module.exports =
                   success: (data)=>
                     status = data
                     test.equal status.status, 'failed'
-                    console.log data
                     test.equal data.formats[0].status, 'failed'
                     test.done()
 

@@ -50,6 +50,7 @@ allowCrossDomain = (req, res, next)->
 
 app.configure ()->
   app.use(allowCrossDomain)
+  app.use(Secure.authenticate)
   app.use(express.bodyParser())
   app.use(express.methodOverride())
   app.use(app.router)
@@ -85,29 +86,28 @@ else
   console.log "Initializing registry as master: URL %s", Config.serverUrl()
   app.registry = new Registry(Config.serverUrl())
 
-
 registryController = new RegistryController(app)
 fileController = new FileController(app)
 syncController = new SyncController(app)
 
-app.get '/registry', Secure.systemAuth, registryController.get
-app.post '/registry', Secure.systemAuth, registryController.add
-app.put '/registry', Secure.systemAuth, registryController.sync
+app.get '/registry', Secure.system,  registryController.get
+app.post '/registry', Secure.system,  registryController.add
+app.put '/registry', Secure.system,  registryController.sync
 
-app.post '/sync', Secure.systemAuth, syncController.sync
-app.get '/sync/:fileId/:filename', Secure.systemAuth, syncController.file
+app.post '/sync', Secure.system,  syncController.sync
+app.get '/sync/:fileId/:filename', Secure.system,  syncController.file
 
-app.get '/:fileId.status', Secure.readAuth, fileController.status
-app.get '/:format/:fileId/:options', Secure.readAuth, fileController.serve
-app.get '/:format/:fileId', Secure.readAuth, fileController.serve
-app.get '/:fileId',  Secure.readAuth, fileController.serve
-app.post '/:format/:fileId', Secure.readAuth, fileController.finish
-app.post '/', (req,res,next)->
+app.get '/:fileId.status', Secure.read, fileController.status
+app.get '/:format/:fileId/:options', Secure.read, fileController.serve
+app.get '/:format/:fileId', Secure.read, fileController.serve
+app.get '/:fileId', Secure.read,  fileController.serve
+app.post '/:format/:fileId', Secure.update, fileController.finish
+app.post '/', Secure.create, (req,res,next)->
   if req.files
     fileController.upload(req, res, next)
   else
     fileController.download(req, res, next)
-app.delete '/:fileId', fileController.delete
+app.delete '/:fileId', Secure.delete, fileController.delete
 
 server = http.createServer(app).listen(port)
 

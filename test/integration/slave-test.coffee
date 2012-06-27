@@ -37,7 +37,6 @@ module.exports =
     setTimeout ->
       request.get Secure.systemUrl(serverUrl1 + 'registry'),  (err, response, body)=>
         test.ifError err
-        console.log body
         registry = JSON.parse body
         test.equal response.headers['content-type'], 'application/json'
         test.equal masterUrl, registry.master
@@ -93,7 +92,6 @@ module.exports =
         findFile()
 
   testReset: (test)->
-    console.log "Reset Test"
     request.put Secure.systemUrl(serverUrl1 + 'registry'), json: { master: masterUrl }, (err, response, registry)=>
         test.equal response.headers['content-type'], 'application/json'
         test.equal masterUrl, registry.master

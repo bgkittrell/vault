@@ -15,7 +15,6 @@ Profile = require '../models/profile'
 class SyncController
   constructor: (@app)->
   sync: (req, res, next)->
-    console.log("Sync sync")
     json = req.body
 
     File.fetch json.id, (file)->
@@ -30,7 +29,6 @@ class SyncController
               filePath = path.join(Config.tmpDir, file.id + file.filename(name))
 
               queue.push (done)->
-                console.log "Getting format from master"
                 request(Secure.systemUrl(Config.masterUrl + "#{name}/#{file.id}"), (err, response, body)->
                   console.error err if err
                   fs.rename filePath, to.path(name), done
@@ -42,7 +40,6 @@ class SyncController
                 thumbPath = path.join(Config.tmpDir, json.id + thumbnails.label)
 
                 queue.push (done)->
-                  console.log "Getting thumb from master"
                   request(Secure.systemUrl(Config.masterUrl + "sync/#{json.id}/#{thumbnails.label}.png"),  (err, response, body)->
                     console.error err if err
                     fs.rename thumbPath, to.join("#{thumbnails.label}.png"), done
@@ -62,7 +59,6 @@ class SyncController
         syncFile json, file
       else
         originalPath = path.join(Config.tmpDir, json.filename)
-        console.log "Getting original from master"
         request(Secure.systemUrl(Config.masterUrl + json.id),  (err, response, body)->
           File.create originalPath, json.filename.replace(/original\./, ''), json.profile, json.id, (file)=>
             syncFile json, file
@@ -70,11 +66,8 @@ class SyncController
       res.end()
 
   file: (req, res, next)->
-    console.log("Sync sync")
     id = req.params.fileId
     filename = req.params.filename
-
-    console.log "File Id: %s", id
 
     File.fetch id, (file)=>
       if file
