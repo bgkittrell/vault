@@ -8,9 +8,9 @@ class ResizeFilter
       path = if @settings.file then file.join(@settings.file) else file.path()
       gm(path).resize(@settings.w, @settings.h).write file.path(@format), (error)->
         file.refresh()
-        cb(file)
+        cb(file.path(n))
     else
-      cb(file)
+      cb(file.path(n))
 
 module.exports = ResizeFilter
 

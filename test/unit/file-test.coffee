@@ -22,7 +22,7 @@ standardFileTests = (filename)->
       test.ok @file.id.match /[\w-]{36}/, "File id is invalid"
       test.done()
   'Fetch File': (test)=>
-    File.fetch @file.id, null, (_file)=>
+    File.fetch @file.id, (_file)=>
       @file = _file
       test.equal _file.id, @file.id
       test.equal _file.filename(), @file.filename()
@@ -127,15 +127,17 @@ module.exports =
       test.equal @file.extension('thumb'), 'jpg'
       test.done()
     'Fetch With Format': (test)=>
-      File.fetch @file.id, null, (_file)=>
+      File.fetch @file.id, (_file)=>
         test.ifError @file.findFormat('thumb'), "Shouldn't have thumbnail"
-      File.fetch @file.id, 'thumb', (_file)=>
+      File.fetch @file.id, (_file)=>
         @file = _file
-        test.ok @file.findFormat('thumb'), "Should have thumbnail"
-        fs.stat @file.join('han.thumb.jpg'), (err, stat)=>
-          test.ifError err
-          gm(@file.path('thumb')).size (err, value)=>
+        _file.filter 'thumb', (filePath)=>
+          test.equal filePath, _file.path('thumb')
+          test.ok @file.findFormat('thumb'), "Should have thumbnail"
+          fs.stat @file.join('han.thumb.jpg'), (err, stat)=>
             test.ifError err
-            test.equal 100, value.width
-            test.equal 99, value.height
-            test.done()
+            gm(@file.path('thumb')).size (err, value)=>
+              test.ifError err
+              test.equal 100, value.width
+              test.equal 99, value.height
+              test.done()

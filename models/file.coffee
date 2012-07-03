@@ -104,6 +104,20 @@ class File
       @touch(p) for p in data
     else
       p for p in @contents when p.match /(status|size|duration)$/
+  filter: (args..., callback) ->
+    format = args[0]
+    options = args[1]
+
+    try
+      if @originalName
+        @profile().filter @, format, options, callback
+      else
+        callback null
+    catch error
+      console.error error
+      callback null
+  delete: (callback)->
+    fs.rename @path(), path.join(Config.deleteDir, @id), callback
 
   # Static
   @directory: (id)->
@@ -117,6 +131,7 @@ class File
     filePath = args[0]
     name = args[1]
     profile = args[2]
+    public = args[2]
     id = args[3]
 
     id ||= uuid.v4()
@@ -127,25 +142,10 @@ class File
     mkdirp.sync(file.directory())
     fs.rename filePath, file.path(), ()->
       file.set profile: profile || Profile.default(name), ->
+        file.set public: true if public
         file.profile().metaFilter file, callback
 
-  @fetch: (args..., callback) ->
-    id = args[0]
-    format = args[1]
-    options = args[2]
-
-    try
-      file = new File(id)
-      if file.originalName
-        file.profile().filter file, format, options, callback
-      else
-        callback null
-    catch error
-      console.error error
-      callback null
-
-  @delete: (id, callback)->
-    File.fetch id, 'original', (file)->
-      fs.rename file.path(), path.join(Config.deleteDir, id), callback
+  @fetch: (id, callback) ->
+    callback(new File(id))
 
 module.exports = File

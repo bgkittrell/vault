@@ -7,6 +7,7 @@ http = require 'http'
 Config = require './config'
 Secure = require './secure'
 Registry = require './models/registry'
+File = require './models/file'
 
 RegistryController = require './controllers/registry'
 FileController = require './controllers/file'
@@ -43,14 +44,19 @@ app.on 'error', (err) ->
   console.log 'there was an error:', err.stack
 
 allowCrossDomain = (req, res, next)->
-  res.header('Access-Control-Allow-Origin', 'http://localhost:9001')
+  res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-  res.header('Access-Control-Allow-Headers', 'Content-Type')
-  next()
+  res.header('Access-Control-Allow-Headers', 'Authorization')
+  res.header('Access-Control-Allow-Credentials', 'true')
+  if req.method == 'OPTIONS'
+    res.statusCode = 200
+    res.end()
+  else
+    next()
 
 app.configure ()->
   app.use(allowCrossDomain)
-  app.use(Secure.authenticate)
+  app.use(Secure.load())
   app.use(express.bodyParser())
   app.use(express.methodOverride())
   app.use(app.router)
@@ -66,8 +72,14 @@ app.configure 'test', ()->
 
 app.param 'fileId', (req, res, next, fileId)->
   unless fileId.match /^\w+\-\w+\-\w+\-\w+\-\w+$/
-    res.send(404)
-    return next("#{fileId} not found")
+    res.statusCode = 404
+    return res.end()
+  File.fetch fileId, (file)->
+    if file
+      req.file = file
+    else
+      res.statusCode = 404
+      return res.end()
   next()
 
 if Config.masterUrl
@@ -90,7 +102,7 @@ registryController = new RegistryController(app)
 fileController = new FileController(app)
 syncController = new SyncController(app)
 
-app.get '/registry', Secure.system,  registryController.get
+app.get '/registry', Secure.read,  registryController.get
 app.post '/registry', Secure.system,  registryController.add
 app.put '/registry', Secure.system,  registryController.sync
 

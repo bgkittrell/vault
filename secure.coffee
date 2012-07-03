@@ -4,11 +4,12 @@ Config = require './config'
 utils = require('express').utils
 
 class Secure
-  @authenticate: express.basicAuth (username, password, callback)->
-    if username and password
-      callback null, { username: username, password: password }
-    else
-      callback "Unauthorizeded"
+  @load: ()->
+    return express.basicAuth (username, password, callback)->
+      if username and password
+        callback null, { username: username, password: password }
+      else
+        callback null
   @system: (req, res, next)->
     if req.user.username is 'system'
       next()
@@ -37,10 +38,13 @@ class Secure
       app: Config.appKey
     Secure.authorize req, res, next, authorized
   @authorize: (req, res, next, authorized)->
-    if @checkCreds req.user.username, req.user.password, authorized
-      next()
+    if req.user
+      if @checkCreds req.user.username, req.user.password, authorized
+        next()
+      else
+        @remoteAuth req, res, next
     else
-      @remoteAuth req, res, next
+      @unauthorized()
   @checkCreds: (username, password, creds)->
     for key, value of creds
       return true if username is key and password is value
@@ -52,12 +56,12 @@ class Secure
     unless Config.remoteAuthUrl
       Secure.unauthorized res
     else
-      request.get Config.remoteAuthUrl, json: true, qs: { username: req.user.username, password: req.user.password }, (err, response, json)->
+      request.get uri: Config.remoteAuthUrl, json: true, qs: { username: req.user.username, password: req.user.password, fileId: req.params.fileId }, (err, response, json)->
         if err
           console.error "Error in remote authorization"
           console.error err
           Secure.unauthorized res
-        else if response.statusCode is 200 and (!req.params.fileId or req.params.fileId in json)
+        else if response.statusCode is 200 and json and (!req.params.fileId or req.params.fileId in json)
           next()
         else
           Secure.unauthorized res

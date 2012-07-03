@@ -74,3 +74,23 @@ module.exports =
             test.ok data.length > 1, 'Returned file is empty'
             test.equal response.statusCode, 200
             test.done()
+  testMakePublic: (test)->
+    console.log "Test Make Public"
+    filename = './test/data/file.original.txt'
+    start = new Date().getTime()
+
+    rest.upload serverUrl,
+      [filename],
+      { public: true },
+      success: (files)=>
+        end = new Date().getTime()
+        console.log "Finished in #{end - start} millis"
+
+        rest.get Config.serverUrl() + files[0].id,
+          failed: (response)=>
+            test.ok false, "Shouldn't be here"
+            test.done()
+          success: (data, response)=>
+            test.ok data.length > 1, 'Returned file is empty'
+            test.equal response.statusCode, 200
+            test.done()

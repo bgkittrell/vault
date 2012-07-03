@@ -7,6 +7,8 @@ Config =
   serverProtocol: 'http'
   systemKey: 'Bh8XJhRVED4zLgWQyW'
   apiKey: 'ih8XJhRnE34zLg3QiW'
+  appKey: 'h8XJhRnE34zLg3Qi8'
+  remoteAuthUrl: 'http://localhost:9001/auth/file'
   serverUrl: ->
     "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
   apiUrl: ->

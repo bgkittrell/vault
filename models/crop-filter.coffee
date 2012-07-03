@@ -12,13 +12,13 @@ class CropFilter
       if options
         gm(path).crop(options.w, options.h, options.x, options.y).write file.path(n), (error)->
           file.refresh()
-          cb(file, file.path(n))
+          cb(file.path(n))
       else
         gm(path).thumb @settings.w, @settings.h, file.path(n), @settings.quality || 100, (error)->
           file.refresh()
-          cb(file)
+          cb(file.path(n))
     else
-      cb(file, file.path(n))
+      cb(file.path(n))
 
 module.exports = CropFilter
 

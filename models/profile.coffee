@@ -32,7 +32,7 @@ class Profile
       filter = @_resolveFilter(hash(format.filter).firstKey(), formatName, hash(format.filter).first())
       filter.filter file, options, callback
     else
-      callback(file)
+      callback(file.path())
   extension: (formatName)->
     if format = @formats[formatName]
       if transcoder = format.transcoder
