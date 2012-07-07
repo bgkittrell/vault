@@ -19,7 +19,7 @@ server = http.createServer (req, res)->
     res.writeHead(200, {'Content-Type': 'application/json'})
     res.end "[\"asdf-asdf-asdf-asdf-asdf\"]"
   else
-    res.writeHead(401)
+    res.writeHead(403)
     res.end()
 
 server.listen Config.serverPort + 1
@@ -40,50 +40,50 @@ module.exports =
     rest.upload Config.serverUrl(),
       [filename],
       success: ()=>
-        test.ok false, "Should get a 401"
+        test.ok false, "Should get a 403"
       failure: (response)=>
-        test.equals response.statusCode, 401
+        test.equals response.statusCode, 404
         test.done()
   getUnauthenticated: (test)->
     rest.get Config.serverUrl() + testFile.id,
       success: ()=>
-        test.ok false, "Should get a 401"
+        test.ok false, "Should get a 404"
       failure: (response)=>
-        test.equals response.statusCode, 401
+        test.equals response.statusCode, 403
         test.done()
   deleteUnauthenticated: (test)->
     rest.delete Config.serverUrl() + testFile.id,
       success: ()=>
-        test.ok false, "Should get a 401"
+        test.ok false, "Should get a 404"
         test.done()
       failure: (response)=>
-        test.equals response.statusCode, 401
+        test.equals response.statusCode, 404
         test.done()
   systemSuite:
     getUnauthenticated: (test)->
-      rest.get Secure.secureUrl(Config.serverUrl(), 'system', 'asdfasdfsd') + testFile.id,
+      rest.get Secure.secureUrl(testFile.id, 'system', 'asdfasdfsd'),
         success: ()=>
-          test.ok false, "Should get a 401"
+          test.ok false, "Should get a 403"
           test.done()
         failure: (response)=>
-          test.equals response.statusCode, 401
+          test.equals response.statusCode, 403
           test.done()
     getUnauthorized: (test)->
       rest.get Secure.apiUrl(Config.serverUrl() + 'registry'),
         success: ()=>
-          test.ok false, "Should get a 401"
+          test.ok false, "Should get a 403"
           test.done()
         failure: (response)=>
-          test.equals response.statusCode, 401
+          test.equals response.statusCode, 403
           test.done()
     getAuthenticated: (test)->
-      rest.get Secure.systemUrl() + testFile.id,
+      rest.get Secure.systemUrl(testFile.id),
         success: (files, response)=>
           test.equals response.statusCode, 200
           test.done()
   apiSuite:
     getAuthenticated: (test)->
-      rest.get Secure.apiUrl() + testFile.id,
+      rest.get Secure.apiUrl(testFile.id),
         success: (files, response)=>
           test.equals response.statusCode, 200
           test.done()
@@ -92,29 +92,29 @@ module.exports =
       username = 'sam'
       password = 'benspw'
 
-      rest.get Secure.secureUrl(Config.serverUrl(), username, password) + testFile.id,
+      rest.get Secure.secureUrl(testFile.id, username, password),
         success: ()=>
-          test.ok false, "Should get a 401"
+          test.ok false, "Should get a 403"
           test.done()
         failure: (response)=>
-          test.equals response.statusCode, 401
+          test.equals response.statusCode, 403
           test.done()
     getUnauthorized: (test)->
       username = 'sam'
       password = 'samspw'
 
-      rest.get Secure.secureUrl(Config.serverUrl(), username, password) + testFile.id,
+      rest.get Secure.secureUrl(testFile.id, username, password),
         success: ()=>
-          test.ok false, "Should get a 401"
+          test.ok false, "Should get a 403"
           test.done()
         failure: (response)=>
-          test.equals response.statusCode, 401
+          test.equals response.statusCode, 403
           test.done()
     getAuthenticated: (test)->
       username = 'ben'
       password = 'benspw'
 
-      rest.get Secure.secureUrl(Config.serverUrl(), username, password) + testFile.id,
+      rest.get Secure.secureUrl(testFile.id, username, password),
         failure: (response)=>
           test.ok false, "Request was denied"
           test.done()

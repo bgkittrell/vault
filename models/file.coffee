@@ -73,11 +73,11 @@ class File
       return @get(".status$")
   json: ->
     size = @values('size')
-    duration = @get('duration')
     status = @status()
     {
       id: @id
-      duration: duration
+      duration: @get('duration')
+      public: @get('public') || false
       width: size[0] if size
       height: size[1] if size
       status: status
@@ -130,22 +130,24 @@ class File
   @create: (args..., callback) ->
     filePath = args[0]
     name = args[1]
-    profile = args[2]
-    public = args[2]
-    id = args[3]
+    options = args[2] || {}
 
-    id ||= uuid.v4()
+    id = options.id || uuid.v4()
     originalName =  name.replace(/\ /, '-').replace(/[^A-Za-z0-9\.\-_]/, '').replace(/(.*\.)(\w+)$/, '$1original.$2').toLowerCase()
 
     file = new File(id, originalName)
 
     mkdirp.sync(file.directory())
     fs.rename filePath, file.path(), ()->
-      file.set profile: profile || Profile.default(name), ->
-        file.set public: true if public
+      file.set profile: options.profile || Profile.default(name), ->
+        file.set public: true if options.public
         file.profile().metaFilter file, callback
 
   @fetch: (id, callback) ->
-    callback(new File(id))
+    try
+      callback(new File(id))
+    catch error
+      console.error error
+      callback null
 
 module.exports = File

@@ -6,6 +6,7 @@ hash = require '../util/hash'
 mime = require 'mime'
 util = require 'util'
 async = require 'async'
+url = require 'url'
 
 Config = require '../config'
 Secure = require '../secure'
@@ -16,6 +17,9 @@ class SyncController
   constructor: (@app)->
   sync: (req, res, next)->
     json = req.body
+
+    sourceUrl = json.sourceUrl
+    console.log "Syncing file from source url: %s", sourceUrl
 
     File.fetch json.id, (file)->
       syncFile = (from, to)->
@@ -29,9 +33,12 @@ class SyncController
               filePath = path.join(Config.tmpDir, file.id + file.filename(name))
 
               queue.push (done)->
-                request(Secure.systemUrl(Config.masterUrl + "#{name}/#{file.id}"), (err, response, body)->
-                  console.error err if err
-                  fs.rename filePath, to.path(name), done
+                request(Secure.systemUrl(sourceUrl + "#{name}/#{file.id}"), (err, response, body)->
+                  if err
+                    console.error "Couldn't sync file: %s", json.id
+                    console.error err
+                  else
+                    fs.rename filePath, to.path(name), done
                 ).pipe(fs.createWriteStream(filePath))
 
               thumbnails = hash(format.transcoder).first().thumbnails
@@ -40,7 +47,7 @@ class SyncController
                 thumbPath = path.join(Config.tmpDir, json.id + thumbnails.label)
 
                 queue.push (done)->
-                  request(Secure.systemUrl(Config.masterUrl + "sync/#{json.id}/#{thumbnails.label}.png"),  (err, response, body)->
+                  request(Secure.systemUrl(sourceUrl + "sync/#{json.id}/#{thumbnails.label}.png"),  (err, response, body)->
                     console.error err if err
                     fs.rename thumbPath, to.join("#{thumbnails.label}.png"), done
                   ).pipe(fs.createWriteStream(thumbPath))
@@ -59,9 +66,13 @@ class SyncController
         syncFile json, file
       else
         originalPath = path.join(Config.tmpDir, json.filename)
-        request(Secure.systemUrl(Config.masterUrl + json.id),  (err, response, body)->
-          File.create originalPath, json.filename.replace(/original\./, ''), json.profile, json.id, (file)=>
-            syncFile json, file
+        request(Secure.systemUrl(sourceUrl + json.id),  (err, response, body)->
+          if err
+            console.error "Couldn't sync file: %s", json.id
+            console.error err
+          else
+            File.create originalPath, json.filename.replace(/original\./, ''), profile: json.profile, id: json.id, public: json.public, (file)=>
+              syncFile json, file
         ).pipe(fs.createWriteStream(originalPath))
       res.end()
 

@@ -50,12 +50,12 @@ module.exports =
         profile = new Profile('video', Config.profiles.audio)
         formats = hash(profile.formats).filter((k,v)-> v.transcoder)
         for name, format of formats
-          rest.postJson Secure.systemUrl() + name + '/' + audio.id, post,
+          rest.postJson Secure.systemUrl(name + '/' + audio.id), post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == hash(formats).keys().length
-                rest.get Secure.systemUrl() + audio.id + '.status',
+                rest.get Secure.systemUrl(audio.id + '.status'),
                   success: (data)=>
                     status = data
                     test.equal status.status, 'finished'

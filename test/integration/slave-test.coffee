@@ -67,6 +67,33 @@ module.exports =
       test.ok serverUrl2 in registry.slaves
       test.ok serverUrl3 in registry.slaves
       test.done()
+  testUploadToSlave: (test)->
+    rest.upload Secure.systemUrl(serverUrl2),
+      ['./test/data/file.txt'],
+      success: (files)=>
+        findFile = ->
+          file = files[0]
+          path1 = File.directory(file.id).replace /media/, 'media2'
+          path2 = File.directory(file.id)
+          contents = fs.readdirSync(path1)
+          console.log "Comparing contents of #{path1} and #{path2}"
+          fs.readdir path2, (err, slaveContents)=>
+            console.log "Slave contents"
+            console.log slaveContents
+            console.log "Contents"
+            console.log contents
+            if slaveContents && contents.length > 1 and contents.length is slaveContents.length
+              stat1 = fs.statSync path1 + '/file.original.txt'
+              stat2 = fs.statSync path2 + '/file.original.txt'
+              console.log "size: %s", stat1.size
+              test.equal stat1.size, stat2.size
+              test.deepEqual contents, slaveContents
+              test.done()
+            else
+              console.log "File not found, will try again in 3 secs"
+              setTimeout findFile, 3000
+        findFile()
+
   testFileSync: (test)->
     rest.upload Secure.systemUrl(serverUrl1),
       ['./test/data/waves.mov'],

@@ -4,6 +4,7 @@ fs = require 'fs'
 {Zencoder} = require 'zencoder'
 hash = require '../util/hash'
 Config = require '../config'
+Secure = require '../secure'
 
 class VideoTranscoder
   start: (file)=>
@@ -14,13 +15,13 @@ class VideoTranscoder
       hash(options).merge
         public: no
         notifications: [
-          Config.apiUrl() + name + '/' + file.id
+          Secure.apiUrl(name + '/' + file.id)
         ]
       outputs.push options
 
     Zencoder::api_key = Config.zencoderKey
     Zencoder::Job.create
-      input: Config.apiUrl() + file.id
+      input: Secure.apiUrl(file.id)
       outputs: outputs
 
   finish: (file, notification, formatName,  callback)=>

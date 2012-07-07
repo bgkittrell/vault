@@ -9,12 +9,24 @@ Config =
   apiKey: 'ih8XJhRnE34zLg3QiW'
   appKey: 'h8XJhRnE34zLg3Qi8'
   remoteAuthUrl: 'http://localhost:9001/auth/file'
+  zencoderKey: '1e8ef8591b769f1a4b153c2819b7e6e2'
   serverUrl: ->
     "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
-  apiUrl: ->
-    "#{Config.serverProtocol}://api:#{Config.apiKey}@#{Config.serverHost}:#{Config.serverPort}/"
-  zencoderKey: '1e8ef8591b769f1a4b153c2819b7e6e2'
-  profiles:
+
+Config.production =
+  mediaDir: '/tmp/media'
+  tmpDir: '/tmp/'
+  deleteDir: '/tmp/delete'
+  serverHost: '@VAULT_HOST@'
+  serverPort: 7000
+  serverProtocol: 'http'
+  systemKey: '@VAULT_SYSTEM_KEY@'
+  apiKey: '@VAULT_API_KEY@'
+  appKey: '@VAULT_APP_KEY@'
+  remoteAuthUrl: '@VAULT_REMOTE_AUTH_URL@'
+  zencoderKey: '@VAULT_ZENCODER_KEY@'
+
+Config.profiles =
     'image':
       metaFilter: 'ImageMeta'
       extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff']

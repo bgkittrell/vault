@@ -30,7 +30,7 @@ module.exports =
 
             filePath = "/tmp/#{name}#{file.id}"
 
-            request(serverUrl + name + '/' + file.id, (err, response)=>
+            request(Secure.systemUrl(name + '/' + file.id), (err, response)=>
               test.equal response.statusCode, 200
 
               count++
@@ -54,7 +54,7 @@ module.exports =
       [filename],
       success: (files)=>
         file = files[0]
-        rest.delete serverUrl + file.id,
+        rest.delete Secure.systemUrl(file.id),
           success: (files, response)=>
             fs.statSync path.join(Config.deleteDir, file.id)
             test.equal response.statusCode, 200
@@ -69,7 +69,7 @@ module.exports =
         end = new Date().getTime()
         console.log "Finished in #{end - start} millis"
 
-        rest.get serverUrl + files[0].id,
+        rest.get Secure.systemUrl(files[0].id),
           success: (data, response)=>
             test.ok data.length > 1, 'Returned file is empty'
             test.equal response.statusCode, 200

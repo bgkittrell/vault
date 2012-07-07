@@ -4,17 +4,24 @@ Config = require './config'
 utils = require('express').utils
 
 class Secure
-  @load: ()->
-    return express.basicAuth (username, password, callback)->
-      if username and password
-        callback null, { username: username, password: password }
-      else
-        callback null
+  @user: (req)->
+    unless req.user
+      if req.headers.authorization
+        credentials = new Buffer(req.headers.authorization.split(' ')[1], 'base64').toString().split(':')
+        req.user = { username: credentials[0], password: credentials[1] }
+      else if req.param('auth')
+        credentials = new Buffer(req.param('auth'), 'base64').toString().split(':')
+        req.user = { username: credentials[0], password: credentials[1] }
+    req.user
   @system: (req, res, next)->
-    if req.user.username is 'system'
-      next()
-    else
-      Secure.unauthorized res
+    authorized =
+      system: Config.systemKey
+    Secure.authorize req, res, next, authorized, false
+  @app: (req, res, next)->
+    authorized =
+      system: Config.systemKey
+      app: Config.appKey
+    Secure.authorize req, res, next, authorized, false
   @read: (req, res, next)->
     authorized =
       system: Config.systemKey
@@ -37,26 +44,28 @@ class Secure
       system: Config.systemKey
       app: Config.appKey
     Secure.authorize req, res, next, authorized
-  @authorize: (req, res, next, authorized)->
-    if req.user
-      if @checkCreds req.user.username, req.user.password, authorized
-        next()
-      else
-        @remoteAuth req, res, next
-    else
-      @unauthorized()
+  @authorize: (req, res, next, authorized, remoteAuth = true)->
+    user = @user(req)
+    if req.locals.file and req.locals.file.get('public')
+      return next()
+    else if user && @checkCreds user.username, user.password, authorized
+      return next()
+    else if remoteAuth
+      return @remoteAuth req, res, next
+    @unauthorized(res)
   @checkCreds: (username, password, creds)->
     for key, value of creds
       return true if username is key and password is value
     return false
   @unauthorized: (res)->
-    res.statusCode = 401
+    res.statusCode = 403
     res.end('Unauthorized')
   @remoteAuth: (req, res, next)->
     unless Config.remoteAuthUrl
       Secure.unauthorized res
     else
-      request.get uri: Config.remoteAuthUrl, json: true, qs: { username: req.user.username, password: req.user.password, fileId: req.params.fileId }, (err, response, json)->
+      user = @user(req) || {}
+      request.get uri: Config.remoteAuthUrl, json: true, qs: { username: user.username, password: user.password, fileId: req.params.fileId }, (err, response, json)->
         if err
           console.error "Error in remote authorization"
           console.error err
@@ -76,6 +85,9 @@ class Secure
     else
       @systemUrl(Config.serverUrl())
   @secureUrl: (url, username, password)->
-    url.replace /:\/\//, "://#{username}:#{password}@"
+    token = new Buffer("#{username}:#{password}").toString('base64')
+    unless url.match 'http://'
+      url = Config.serverUrl() + url
+    url.replace /:\/\/([^\/]+)\//, "://$1/secure/#{token}/"
 
 module.exports = Secure

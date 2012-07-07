@@ -55,20 +55,19 @@ allowCrossDomain = (req, res, next)->
     next()
 
 app.configure ()->
+  app.use (req, res, next)->
+    req.locals ||= {}
+    next()
   app.use(allowCrossDomain)
-  app.use(Secure.load())
   app.use(express.bodyParser())
   app.use(express.methodOverride())
   app.use(app.router)
 
-app.configure 'development', ()->
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }))
-
 app.configure 'production', ()->
+  console.log "Production mode"
   app.use(express.errorHandler())
-
-app.configure 'test', ()->
-  port += 1
+  for key, value of Config.production
+    Config[key] = value
 
 app.param 'fileId', (req, res, next, fileId)->
   unless fileId.match /^\w+\-\w+\-\w+\-\w+\-\w+$/
@@ -76,7 +75,7 @@ app.param 'fileId', (req, res, next, fileId)->
     return res.end()
   File.fetch fileId, (file)->
     if file
-      req.file = file
+      req.locals.file = file
     else
       res.statusCode = 404
       return res.end()
@@ -102,24 +101,31 @@ registryController = new RegistryController(app)
 fileController = new FileController(app)
 syncController = new SyncController(app)
 
-app.get '/registry', Secure.read,  registryController.get
-app.post '/registry', Secure.system,  registryController.add
-app.put '/registry', Secure.system,  registryController.sync
+app.get '/secure/:auth/registry', Secure.app,  registryController.get
+app.post '/secure/:auth/registry', Secure.system,  registryController.add
+app.put '/secure/:auth/registry', Secure.system,  registryController.sync
 
-app.post '/sync', Secure.system,  syncController.sync
-app.get '/sync/:fileId/:filename', Secure.system,  syncController.file
+app.post '/secure/:auth/sync', Secure.system,  syncController.sync
+app.get '/secure/:auth/sync/:fileId/:filename', Secure.system,  syncController.file
+
+app.get '/secure/:auth/crossdomain.xml', fileController.crossdomain
+app.get '/secure/:auth/:fileId.status', Secure.read, fileController.status
+app.get '/secure/:auth/:format/:fileId/:options', Secure.read, fileController.serve
+app.get '/secure/:auth/:format/:fileId', Secure.read, fileController.serve
+app.get '/secure/:auth/:fileId', Secure.read,  fileController.serve
 
 app.get '/:fileId.status', Secure.read, fileController.status
 app.get '/:format/:fileId/:options', Secure.read, fileController.serve
 app.get '/:format/:fileId', Secure.read, fileController.serve
 app.get '/:fileId', Secure.read,  fileController.serve
-app.post '/:format/:fileId', Secure.update, fileController.finish
-app.post '/', Secure.create, (req,res,next)->
+
+app.post '/secure/:auth/:format/:fileId', Secure.update, fileController.finish
+app.post '/secure/:auth', Secure.create, (req,res,next)->
   if req.files
     fileController.upload(req, res, next)
   else
     fileController.download(req, res, next)
-app.delete '/:fileId', Secure.delete, fileController.delete
+app.delete '/secure/:auth/:fileId', Secure.delete, fileController.delete
 
 server = http.createServer(app).listen(port)
 

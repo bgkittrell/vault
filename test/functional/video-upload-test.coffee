@@ -8,6 +8,7 @@ hash = require '../../util/hash'
 Config = require '../../config'
 Secure = require '../../secure'
 Profile = require '../../models/profile'
+File = require '../../models/file'
 VideoTranscoder = require '../../models/video-transcoder'
 
 VideoTranscoder.prototype.start = (file)->
@@ -43,6 +44,17 @@ failedZencoderResponse =  (thumbUrl, videoUrl)->
       "frame_rate": 25.0
 
 module.exports =
+  testVideoProfile: (test)->
+    filename = './test/data/waves.mov'
+
+    rest.upload serverUrl,
+      [filename],
+      success: (files)=>
+        video = files[0]
+        File.fetch video.id, (file)->
+          test.equal file.profile().name, 'video'
+          test.done()
+
   testVideoUpload: (test)->
     filename = './test/data/waves.mov'
     image = './test/data/han.jpg'
@@ -55,17 +67,17 @@ module.exports =
         console.log "Finished in #{end - start} millis"
         video = files[0]
         image = files[1]
-        post = zencoderResponse(serverUrl + image.id, serverUrl + video.id)
+        post = zencoderResponse(Secure.systemUrl(image.id), Secure.systemUrl(video.id))
         count = 0
         profile = new Profile('video', Config.profiles.video)
         formats = hash(profile.formats).filter((k,v)-> v.transcoder)
         for name, format of formats
-          rest.postJson serverUrl + name + '/' + video.id, post,
+          rest.postJson Secure.systemUrl(name + '/' + video.id), post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == hash(formats).keys().length
-                rest.get serverUrl + video.id + '.status',
+                rest.get Secure.systemUrl(video.id + '.status'),
                   success: (data)=>
                     status = data
                     test.equal status.status, 'finished'
@@ -84,17 +96,17 @@ module.exports =
         console.log "Finished in #{end - start} millis"
         video = files[0]
         image = files[1]
-        post = zencoderResponse(serverUrl + image.id, serverUrl + video.id)
+        post = zencoderResponse(Secure.systemUrl(image.id), Secure.systemUrl(video.id))
         count = 0
         profile = new Profile('stupeflix', Config.profiles.stupeflix)
         formats = hash(profile.formats).filter((k,v)-> v.transcoder)
         for name, format of formats
-          rest.postJson serverUrl + name + '/' + video.id, post,
+          rest.postJson Secure.systemUrl( name + '/' + video.id), post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == hash(formats).keys().length
-                rest.get serverUrl + video.id + '.status',
+                rest.get Secure.systemUrl(video.id + '.status'),
                   success: (data)=>
                     status = data
                     test.equal status.status, 'finished'
@@ -114,17 +126,17 @@ module.exports =
         console.log "Finished in #{end - start} millis"
         video = files[0]
         image = files[1]
-        post = failedZencoderResponse(serverUrl + image.id, serverUrl + video.id)
+        post = failedZencoderResponse(Secure.systemUrl(image.id), Secure.systemUrl(video.id))
         count = 0
         profile = new Profile('stupeflix', Config.profiles.stupeflix)
         formats = hash(profile.formats).filter((k,v)-> v.transcoder)
         for name, format of formats
-          rest.postJson serverUrl + name + '/' + video.id, post,
+          rest.postJson Secure.systemUrl(name + '/' + video.id), post,
             success: (data, response)=>
               test.equal response.statusCode, 200
               count++
               if count == hash(formats).keys().length
-                rest.get serverUrl + video.id + '.status',
+                rest.get Secure.systemUrl(video.id + '.status'),
                   success: (data)=>
                     status = data
                     test.equal status.status, 'failed'

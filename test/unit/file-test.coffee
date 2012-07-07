@@ -16,7 +16,7 @@ standardFileTests = (filename)->
     fs.copy "./test/data/#{filename}", "/tmp/#{filename}", ()->
       test.done()
   'Create File': (test)=>
-    File.create "/tmp/#{filename}", filename, null, (_file)=>
+    File.create "/tmp/#{filename}", filename, (_file)=>
       @file = _file
       test.ok @file, "File wasn't created"
       test.ok @file.id.match /[\w-]{36}/, "File id is invalid"
@@ -68,7 +68,7 @@ module.exports =
       fs.copy "./test/data/waves.mov", "/tmp/waves.mov", ()->
         test.done()
     'Create File With Profile': (test)=>
-      File.create '/tmp/waves.mov', 'waves.mov', 'stupeflix', (_file)=>
+      File.create '/tmp/waves.mov', 'waves.mov', profile: 'stupeflix', (_file)=>
         @file = _file
         test.ok @file, "File wasn't created"
         test.ok @file.id.match /[\w-]{36}/, "File id is invalid"
@@ -97,6 +97,7 @@ module.exports =
       test.equals hash(json.formats).keys().length, 1
       test.deepEqual json,
         id: @file.id,
+        public: false,
         duration: '1000',
         width: '480',
         height: '360',
@@ -115,7 +116,7 @@ module.exports =
       fs.copy "./test/data/han.jpg", "/tmp/han.jpg", ()->
         test.done()
     'Create File With Profile': (test)=>
-      File.create '/tmp/han.jpg', 'han.jpg', null, (_file)=>
+      File.create '/tmp/han.jpg', 'han.jpg', (_file)=>
         @file = _file
         test.ok @file, "File wasn't created"
         test.ok @file.id.match /[\w-]{36}/, "File id is invalid"

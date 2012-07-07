@@ -42,7 +42,7 @@ class Profile
           return array(file.split('.')).last()
   @default: (filename)->
     for name, profile of Config.profiles
-      if profile.extensions and array(filename.split('.')).last() in profile.extensions
+      if profile.extensions and array(filename.split('.')).last().toLowerCase() in profile.extensions
         return name
     'default'
   _resolveFilter: (filterName, format, settings)->
