@@ -41,6 +41,8 @@ module.exports = (app)->
     else
       methods.download(req, res, next)
   app.delete '/secure/:auth/:fileId', Secure.delete, methods.delete
+  app.post '/', Secure.create, (req,res,next)->
+    methods.upload(req, res, next)
 
 sync = (file, registry)=>
     json = file.json()

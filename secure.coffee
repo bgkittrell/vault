@@ -44,6 +44,7 @@ class Secure
       app: Config.appKey
     Secure.authorize req, res, next, authorized
   @authorize: (req, res, next, authorized, remoteAuth = true)->
+    return next() if Config.wideOpen == true
     user = @user(req)
     if req.locals.file and req.locals.file.get('public')
       return next()

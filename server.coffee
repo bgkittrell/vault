@@ -21,6 +21,10 @@ aparser.on '--master-url', (arg, index)->
   console.log "Overridding default master url"
   Config.masterUrl = arg
 
+aparser.on '-wide-open', ()->
+  console.log "!!!!!!!!! Caution: You have started Vault in WIDE OPEN mode.  This completely disables security and should only be used for testing. !!!!!!!!!"
+  Config.wideOpen = true
+
 aparser.parse(process.argv)
 
 fs.mkdir(Config.mediaDir)
