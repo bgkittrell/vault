@@ -48,7 +48,7 @@ Vault will soon be used in production for [LiveOn](http://www.liveon.com) and [D
 
 ### Starting Server
 ``` bash
-$ coffee app.coffee --wide-open
+$ coffee server --wide-open
 ```
 Wide open disables all security for quick testing.
 
@@ -67,11 +67,28 @@ $ curl --form image1=@./test/data/han.jpg http://localhost:7000
 ### Downloading
 Grab the UUID from the upload response 
 
-example:
-  http://localhost:7000/63543bfb-349a-4c93-90ed-6023c91c5c09
-If it's an image
-  http://localhost:7000/thumb/63543bfb-349a-4c93-90ed-6023c91c5c09
-  http://localhost:7000/medium/63543bfb-349a-4c93-90ed-6023c91c5c09
-  http://localhost:7000/large/63543bfb-349a-4c93-90ed-6023c91c5c09
+Example URL:
+
+http://localhost:7000/63543bfb-349a-4c93-90ed-6023c91c5c09 
+
+If it's an image:
+ 
+http://localhost:7000/thumb/63543bfb-349a-4c93-90ed-6023c91c5c09 
+http://localhost:7000/medium/63543bfb-349a-4c93-90ed-6023c91c5c09 
+http://localhost:7000/large/63543bfb-349a-4c93-90ed-6023c91c5c09 
+
+### More Examples
+
+For more usage examples look at the tests under test/functional
+
+## Roadmap
+
+We're just getting started with Vault.  Here are some features to expect in the future.
+
+- CDN support for high traffic files
+- Vault clients for various languages and frameworks
+- Haystack style block stores (Possibly)
+- Performance optimization
+- More documentation
 
 
