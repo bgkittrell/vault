@@ -38,8 +38,7 @@ app.on 'error', (err) ->
 allowCrossDomain = (req, res, next)->
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-  res.header('Access-Control-Allow-Headers', 'Authorization')
-  res.header('Access-Control-Allow-Credentials', 'true')
+  res.header('Access-Control-Allow-Headers', 'content-type')
   if req.method == 'OPTIONS'
     res.statusCode = 200
     res.end()
@@ -62,7 +61,11 @@ app.configure 'production', ()->
     Config[key] = value
 
 app.get '/crossdomain.xml', (req, res, next)=>
-  res.end '<?xml version="1.0"?><!DOCTYPE cross-domain-policy SYSTEM "http://www.macromedia.com/xml/dtds/cross-domain-policy.dtd"><cross-domain-policy><allow-access-from domain="*" secure="false" /> <allow-http-request-headers-from domain="*" headers="*"/></cross-domain-policy>'
+  res.end '<?xml version="1.0"?>\n
+      <cross-domain-policy>\n
+        <site-control permitted-cross-domain-policies="all"/>\n
+        <allow-access-from domain="*" to-ports="*"/>\n
+      </cross-domain-policy\n'
 
 (require './handlers/registry-handler')(app)
 (require './handlers/sync-handler')(app)

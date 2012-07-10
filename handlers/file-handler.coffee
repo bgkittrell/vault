@@ -1,8 +1,9 @@
-mime = require 'mime'
+ime = require 'mime'
 uuid = require 'node-uuid'
 fs = require 'fs'
 util = require 'util'
 path = require 'path'
+mime = require 'mime'
 client = require '../util/http-client'
 
 File = require '../models/file'
@@ -18,10 +19,10 @@ module.exports = (app)->
     File.fetch fileId, (file)->
       if file
         req.locals.file = file
+        next()
       else
         res.statusCode = 404
-        return res.end()
-    next()
+        res.end()
 
   app.get '/secure/:auth/:fileId.status', Secure.read, methods.status
   app.get '/secure/:auth/:format/:fileId/:options', Secure.read, methods.serve
