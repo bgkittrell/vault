@@ -35,7 +35,7 @@ module.exports =
   postUnauthenticated: (test)->
     filename = './test/data/han.jpg'
     client.upload Config.serverUrl(), filename, (err, files, response)->
-      test.equal response.statusCode, 404
+      test.equal response.statusCode, 403
       test.done()
   getUnauthenticated: (test)->
     client.get Config.serverUrl() + testFile.id, (err, files, response)->
