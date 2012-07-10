@@ -3,7 +3,7 @@ gm = require 'gm'
 path = require 'path'
 hash = require '../../util/hash'
 
-VideoTranscoder = require '../../models/video-transcoder'
+VideoTranscoder = require '../../filters/zencoder'
 
 VideoTranscoder.prototype.start = (file)->
   console.log "Bypassing Zencoder"

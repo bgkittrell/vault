@@ -1,6 +1,6 @@
 url = require 'url'
-app = require '../../app'
-request = require 'request'
+app = require '../../server'
+client = require '../../util/http-client'
 
 Config = require '../../config'
 
@@ -9,10 +9,10 @@ console.log "Testing with URL: %s", serverUrl
 
 module.exports =
   testGetUnauth: (test)->
-    request.get serverUrl + 'sync/1234-1234-1234-1234-1234/1234', (err, response, body)=>
+    client.get serverUrl + 'sync/1234-1234-1234-1234-1234/1234', (err, body, response)=>
       test.equal response.statusCode, 404
       test.done()
   testPostUnauth: (test)->
-    request.post serverUrl + 'sync', (err, response, body)=>
+    client.post serverUrl + 'sync', (err, body, response)=>
       test.equal response.statusCode, 404
       test.done()

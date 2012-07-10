@@ -1,8 +1,8 @@
-request = require 'request'
 fs = require 'fs'
 path = require 'path'
 array = require '../util/array'
 hash = require '../util/hash'
+client = require '../util/http-client'
 mime = require 'mime'
 util = require 'util'
 async = require 'async'
@@ -13,9 +13,8 @@ Secure = require '../secure'
 File = require '../models/file'
 Profile = require '../models/profile'
 
-class SyncController
-  constructor: (@app)->
-  sync: (req, res, next)->
+module.exports = (app)->
+  app.post '/secure/:auth/sync', Secure.system, (req, res, next)->
     json = req.body
 
     sourceUrl = json.sourceUrl
@@ -33,13 +32,12 @@ class SyncController
               filePath = path.join(Config.tmpDir, file.id + file.filename(name))
 
               queue.push (done)->
-                request(Secure.systemUrl(sourceUrl + "#{name}/#{file.id}"), (err, response, body)->
+                client.download Secure.systemUrl(sourceUrl + "#{name}/#{file.id}"), filePath, (err)->
                   if err
                     console.error "Couldn't sync file: %s", json.id
                     console.error err
                   else
                     fs.rename filePath, to.path(name), done
-                ).pipe(fs.createWriteStream(filePath))
 
               thumbnails = hash(format.transcoder).first().thumbnails
 
@@ -47,11 +45,9 @@ class SyncController
                 thumbPath = path.join(Config.tmpDir, json.id + thumbnails.label)
 
                 queue.push (done)->
-                  request(Secure.systemUrl(sourceUrl + "sync/#{json.id}/#{thumbnails.label}.png"),  (err, response, body)->
+                  client.download Secure.systemUrl(sourceUrl + "sync/#{json.id}/#{thumbnails.label}.png"), thumbPath, (err, body, response)->
                     console.error err if err
                     fs.rename thumbPath, to.join("#{thumbnails.label}.png"), done
-                  ).pipe(fs.createWriteStream(thumbPath))
-                
 
               if fromFormat.status
                 queue.push (done)-> to.set status: "#{fromFormat.status}.#{name}", done
@@ -66,17 +62,16 @@ class SyncController
         syncFile json, file
       else
         originalPath = path.join(Config.tmpDir, json.filename)
-        request(Secure.systemUrl(sourceUrl + json.id),  (err, response, body)->
+        client.download Secure.systemUrl(sourceUrl + json.id), originalPath, (err)->
           if err
             console.error "Couldn't sync file: %s", json.id
             console.error err
           else
             File.create originalPath, json.filename.replace(/original\./, ''), profile: json.profile, id: json.id, public: json.public, (file)=>
               syncFile json, file
-        ).pipe(fs.createWriteStream(originalPath))
       res.end()
 
-  file: (req, res, next)->
+  app.get '/secure/:auth/sync/:fileId/:filename', Secure.system, (req, res, next)->
     id = req.params.fileId
     filename = req.params.filename
 
@@ -95,5 +90,3 @@ class SyncController
       else
         res.status = 404
         res.end()
-
-module.exports = SyncController

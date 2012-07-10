@@ -1,7 +1,7 @@
 fs = require 'fs-extra'
 gm = require 'gm'
 hash = require '../../util/hash'
-CropFilter = require '../../models/crop-filter'
+CropFilter = require '../../filters/crop-filter'
 File = require '../../models/file'
 
 module.exports =

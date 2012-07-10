@@ -47,7 +47,7 @@ class Profile
     'default'
   _resolveFilter: (filterName, format, settings)->
     filterPath = filterName.replace(/(.)([A-Z])/, '$1-$2').toLowerCase()
-    filterClass = require "../models/#{filterPath}"
+    filterClass = require "../filters/#{filterPath}"
     new filterClass(format, settings)
 
 module.exports = Profile

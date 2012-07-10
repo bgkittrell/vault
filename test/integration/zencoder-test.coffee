@@ -1,7 +1,7 @@
-app = require '../../app'
+app = require '../../server'
 fs = require 'fs'
 url = require 'url'
-rest = require '../rest'
+client = require '../../util/http-client'
 
 Secure = require '../../secure'
 
@@ -11,14 +11,11 @@ module.exports =
   testVideoUpload: (test)->
     videoFile = './test/data/waves.mov'
 
-    rest.upload serverUrl,
-      [videoFile],
-      success: (files)=>
+    client.upload serverUrl, videoFile, (err, files)=>
         video = files[0]
 
         checkStatus = ->
-          rest.get serverUrl + video.id + '.status',
-            success: (status)->
+          client.json serverUrl + video.id + '.status', (err, status)->
               if status.status is 'finished'
                 test.ok true
                 test.done()

@@ -1,5 +1,5 @@
 reporter = require('nodeunit').reporters.default
-app = require('../app')
+app = require('../server')
 reporter.run [
     'test/unit/file-test.coffee',
     'test/unit/resize-filter-test.coffee',

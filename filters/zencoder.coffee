@@ -1,8 +1,8 @@
-request = require 'request'
 async = require 'async'
 fs = require 'fs'
 {Zencoder} = require 'zencoder'
 hash = require '../util/hash'
+client = require '../util/http-client'
 Config = require '../config'
 Secure = require '../secure'
 
@@ -25,7 +25,7 @@ class VideoTranscoder
       outputs: outputs
 
   finish: (file, notification, formatName,  callback)=>
-    request(notification.output.url, (err)=>
+    client.download notification.output.url, file.path(formatName), (err)=>
       setProp = (prop, callback)->
         file.set prop, callback
       props = [ status: "#{notification.output.state}.#{formatName}" ]
@@ -40,16 +40,12 @@ class VideoTranscoder
       if notification.output.state == 'finished' and notification.output.thumbnails
         thumbImage = notification.output.thumbnails[0].images[0]
         label = notification.output.thumbnails[0].label
-        request(thumbImage.url, (err)->
+        client.download thumbImage.url, file.join("#{label}.png"), (err)->
           async.forEach props, setProp, ()->
             callback.call(file)
-        ).pipe(fs.createWriteStream(file.join("#{label}.png")))
       else
         async.forEach props, setProp, ()->
           callback.call(file)
-
-    ).pipe(fs.createWriteStream(file.path(formatName)))
-
 
 module.exports = VideoTranscoder
 

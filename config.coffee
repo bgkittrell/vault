@@ -47,12 +47,12 @@ Config.profiles =
       extensions: ['mov', 'avi', 'ogv', 'mp4', 'm4v', 'mkv', 'flv']
       'web':
         transcoder:
-          'VideoTranscoder':
+          'Zencoder':
             size: '480x360'
             format: 'mp4'
       'archive':
         transcoder:
-          'VideoTranscoder':
+          'Zencoder':
             format: 'ogv'
             quality: 5
             audio_quality: 5
@@ -73,7 +73,7 @@ Config.profiles =
     'stupeflix':
       'archive':
         transcoder:
-          'VideoTranscoder':
+          'Zencoder':
             format: 'ogv'
             quality: 5
             audio_quality: 5
@@ -81,7 +81,7 @@ Config.profiles =
     'audio':
       'mp3':
         transcoder:
-          'VideoTranscoder':
+          'Zencoder':
             format: 'mp3'
             audio_quality: 5
             speed: 5

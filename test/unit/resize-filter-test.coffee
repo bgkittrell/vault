@@ -1,6 +1,6 @@
 fs = require 'fs-extra'
 gm = require 'gm'
-ResizeFilter = require '../../models/resize-filter'
+ResizeFilter = require '../../filters/resize-filter'
 File = require '../../models/file'
 
 module.exports =

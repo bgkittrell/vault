@@ -1,7 +1,6 @@
 express = require 'express'
-request = require 'request'
+client = require './util/http-client'
 Config = require './config'
-utils = require('express').utils
 
 class Secure
   @user: (req)->
@@ -65,7 +64,7 @@ class Secure
       Secure.unauthorized res
     else
       user = @user(req) || {}
-      request.get uri: Config.remoteAuthUrl, json: true, qs: { username: user.username, password: user.password, fileId: req.params.fileId }, (err, response, json)->
+      client.json Config.remoteAuthUrl, { username: user.username, password: user.password, fileId: req.params.fileId }, (err, json, response)->
         if err
           console.error "Error in remote authorization"
           console.error err
