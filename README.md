@@ -1,5 +1,5 @@
 # Vault - Node.js Media File Server
-## Secure. Fast. Scaleable. Simple.
+## Secure. Fast. Scalable. Simple.
 
 Vault's main purpose is to make it easy to setup your own media file server now, with the intention that it will grow to a massive scale. It's very much inspired 
 by Facebook's [Haystack](http://static.usenix.org/event/osdi10/tech/full_papers/Beaver.pdf), though it is not a direct implementation.  
