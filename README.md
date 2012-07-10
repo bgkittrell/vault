@@ -38,7 +38,7 @@ Vault will soon be used in production for [LiveOn](http://www.liveon.com) and [D
 
 ### Checkout (You should fork so you can customize the configuration)
 ``` bash
-  $ git clone git://github.com/liveondev/vault.git
+  $ git clone git://github.com/bgkittrell/vault.git
 ```
 
 ### Install Node Dependencies
@@ -74,7 +74,9 @@ http://localhost:7000/63543bfb-349a-4c93-90ed-6023c91c5c09
 If it's an image:
  
 http://localhost:7000/thumb/63543bfb-349a-4c93-90ed-6023c91c5c09 
+
 http://localhost:7000/medium/63543bfb-349a-4c93-90ed-6023c91c5c09 
+
 http://localhost:7000/large/63543bfb-349a-4c93-90ed-6023c91c5c09 
 
 ### More Examples
