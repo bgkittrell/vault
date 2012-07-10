@@ -18,7 +18,7 @@ Config.production =
   tmpDir: '/tmp/'
   deleteDir: '/tmp/delete'
   serverHost: '@VAULT_HOST@'
-  serverPort: 7000
+  serverPort: @VAULT_PORT@
   serverProtocol: 'http'
   systemKey: '@VAULT_SYSTEM_KEY@'
   apiKey: '@VAULT_API_KEY@'
