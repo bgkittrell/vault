@@ -31,8 +31,6 @@ fs.mkdir(Config.mediaDir)
 fs.mkdir(Config.tmpDir)
 fs.mkdir(Config.deleteDir)
 
-port = Config.serverPort
-
 app = express()
 app.use(express.logger())
 
@@ -75,6 +73,7 @@ app.get '/crossdomain.xml', (req, res, next)=>
 (require './handlers/sync-handler')(app)
 (require './handlers/file-handler')(app)
 
+port = Config.serverPort
 server = http.createServer(app).listen(port)
 
 app.close = ()->

@@ -1,6 +1,8 @@
 app = require '../../server'
 url = require 'url'
 sys = require 'util'
+async = require 'async'
+mime = require 'mime'
 client = require '../../util/http-client'
 fs = require 'fs'
 hash = require '../../util/hash'
@@ -63,18 +65,21 @@ module.exports =
       console.log "Finished in #{end - start} millis"
       video = files[0]
       post = zencoderResponse(Secure.systemUrl(video.id), Secure.systemUrl(video.id))
-      count = 0
       profile = new Profile('video', Config.profiles.video)
       formats = hash(profile.formats).filter((k,v)-> v.transcoder)
-      for name, format of formats
+      q = async.queue (name, cb)->
+        format = formats[name]
         client.postJson Secure.systemUrl(name + '/' + video.id), post, (err, data, response)=>
           test.equal response.statusCode, 200
-          count++
-          if count == hash(formats).keys().length
-            client.json Secure.systemUrl(video.id + '.status'), (err, data)=>
-                status = data
-                test.equal status.status, 'finished'
-                test.done()
+          client.get Secure.systemUrl(name + '/' + video.id), (err, data, response)=>
+            test.equal mime.lookup(hash(format.transcoder).first().format), response.headers['content-type']
+            cb()
+      , 2
+
+      q.drain = ()->
+        test.done()
+      for name, format of formats
+        q.push name
 
   testVideoProfileUpload: (test)->
     filename = './test/data/waves.mov'
@@ -85,19 +90,23 @@ module.exports =
       console.log "Finished in #{end - start} millis"
       video = files[0]
       post = zencoderResponse(Secure.systemUrl(video.id), Secure.systemUrl(video.id))
-      count = 0
       profile = new Profile('stupeflix', Config.profiles.stupeflix)
       formats = hash(profile.formats).filter((k,v)-> v.transcoder)
-      for name, format of formats
+      q = async.queue (name, cb)->
+        format = formats[name]
         client.postJson Secure.systemUrl( name + '/' + video.id), post, (err, data, response)=>
             test.equal response.statusCode, 200
-            count++
-            if count == hash(formats).keys().length
-              client.json Secure.systemUrl(video.id + '.status'), (err, data)=>
-                  status = data
-                  test.equal status.status, 'finished'
-                  test.equal data.formats[0].status, 'finished'
-                  test.done()
+            client.json Secure.systemUrl(video.id + '.status'), (err, data)=>
+              status = data
+              test.equal status.status, 'finished'
+              test.equal data.formats[0].status, 'finished'
+              cb()
+      , 2
+
+      q.drain = ()->
+        test.done()
+      for name, format of formats
+        q.push name
 
   testFailedStatus: (test)->
     filename = './test/data/waves.mov'
