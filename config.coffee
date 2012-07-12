@@ -1,6 +1,6 @@
 Config =
   mediaDir: '/tmp/media'
-  tmpDir: '/tmp/'
+  tmpDir: '/tmp/uploads'
   deleteDir: '/tmp/delete'
   serverHost: 'localhost'
   serverPort: 7000

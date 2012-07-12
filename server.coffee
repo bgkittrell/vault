@@ -52,7 +52,7 @@ app.configure ()->
     req.locals ||= {}
     next()
   app.use(allowCrossDomain)
-  app.use(express.bodyParser())
+  app.use(express.bodyParser(uploadDir: Config.tmpDir))
   app.use(express.methodOverride())
   app.use(app.router)
 
