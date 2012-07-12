@@ -2,7 +2,7 @@ Config =
   mediaDir: '/tmp/media'
   tmpDir: '/tmp/'
   deleteDir: '/tmp/delete'
-  serverHost: '98.156.53.253'
+  serverHost: 'localhost'
   serverPort: 7000
   serverProtocol: 'http'
   systemKey: 'Bh8XJhRVED4zLgWQyW'
@@ -14,9 +14,9 @@ Config =
     "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
 
 Config.production =
-  mediaDir: '/tmp/media'
-  tmpDir: '/tmp/'
-  deleteDir: '/tmp/delete'
+  mediaDir: '/mnt/vault/media'
+  tmpDir: '/tmp/vault/uploads'
+  deleteDir: '/mnt/vault/delete'
   serverHost: '@VAULT_HOST@'
   serverPort: '@VAULT_PORT@'
   serverProtocol: 'http'
