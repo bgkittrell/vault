@@ -25,12 +25,13 @@ output.once 'open', (fd)->
     lines = data.toString().split /\n/
     importFile = (line, callback)->
       console.log line
-      [url, id] = line.split /,\s*/
+      [url, id, profile] = line.split /,\s*/
       console.log "Importing file: %s", id
-      request.post options.url, json: { url: url }, (requestErr, response, file)->
+      request.post options.url, json: { url: url, profile: profile }, (requestErr, response, file)->
         throw err if err
-        console.log "Imported file: %s", file.id
-        output.write line + ',' + file.id + '\n'
+        if file
+          console.log "Imported file: %s", file.id
+          output.write line + ',' + file.id + '\n'
         callback()
 
     async.forEachSeries lines, importFile, ()->
