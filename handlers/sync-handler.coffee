@@ -37,7 +37,10 @@ module.exports = (app)->
                     console.error "Couldn't sync file: %s", json.id
                     console.error err
                   else
-                    fs.rename filePath, to.path(name), done
+                    fs.copy filePath, to.path(name), (err)->
+                      throw new Error(err) if err
+                      fs.remove filePath
+                      done()
 
               thumbnails = hash(format.transcoder).first().thumbnails
 
@@ -47,7 +50,10 @@ module.exports = (app)->
                 queue.push (done)->
                   client.download Secure.systemUrl(sourceUrl + "sync/#{json.id}/#{thumbnails.label}.png"), thumbPath, (err, body, response)->
                     console.error err if err
-                    fs.rename thumbPath, to.join("#{thumbnails.label}.png"), done
+                    fs.copy thumbPath, to.join("#{thumbnails.label}.png"), (err)->
+                      throw new Error(err) if err
+                      fs.remove thumbPath
+                      done()
 
               if fromFormat.status
                 queue.push (done)-> to.set status: "#{fromFormat.status}.#{name}", done

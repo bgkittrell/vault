@@ -138,7 +138,9 @@ class File
     file = new File(id, originalName)
 
     mkdirp.sync(file.directory())
-    fs.rename filePath, file.path(), ()->
+    fs.copy filePath, file.path(), (err)->
+      throw new Error(err) if err
+      fs.remove filePath
       file.set profile: options.profile || Profile.default(name), ->
         file.set public: true if options.public
         file.profile().metaFilter file, callback
