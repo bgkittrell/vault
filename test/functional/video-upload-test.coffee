@@ -95,18 +95,40 @@ module.exports =
       q = async.queue (name, cb)->
         format = formats[name]
         client.postJson Secure.systemUrl( name + '/' + video.id), post, (err, data, response)=>
-            test.equal response.statusCode, 200
-            client.json Secure.systemUrl(video.id + '.status'), (err, data)=>
-              status = data
-              test.equal status.status, 'finished'
-              test.equal data.formats[0].status, 'finished'
-              cb()
+          test.equal response.statusCode, 200
+          client.get Secure.systemUrl(name + '/' + video.id), (err, data, response)=>
+            test.equal mime.lookup(hash(format.transcoder).first().format), response.headers['content-type']
+            cb()
       , 2
 
       q.drain = ()->
         test.done()
       for name, format of formats
         q.push name
+  testVideoProfileDownload: (test)->
+    filename = './test/data/waves.mov'
+    start = new Date().getTime()
+
+    client.upload serverUrl, filename, (err, files)=>
+      video = files[0]
+      client.postJson serverUrl, {url: Secure.systemUrl(video.id), filename: 'waves.mov', profile: 'stupeflix' }, (err, file)->
+        post = zencoderResponse(Secure.systemUrl(file.id), Secure.systemUrl(file.id))
+        profile = new Profile('stupeflix', Config.profiles.stupeflix)
+        formats = hash(profile.formats).filter((k,v)-> v.transcoder)
+        q = async.queue (name, cb)->
+          format = formats[name]
+          client.postJson Secure.systemUrl( name + '/' + file.id), post, (err, data, response)=>
+            test.ifError err
+            test.equal response.statusCode, 200
+            client.get Secure.systemUrl(name + '/' + file.id), (err, data, response)=>
+              test.equal mime.lookup(hash(format.transcoder).first().format), response.headers['content-type']
+              cb()
+        , 2
+
+        q.drain = ()->
+          test.done()
+        for name, format of formats
+          q.push name
 
   testFailedStatus: (test)->
     filename = './test/data/waves.mov'

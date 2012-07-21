@@ -20,6 +20,8 @@ class VideoTranscoder
       outputs.push options
 
     Zencoder::api_key = Config.zencoderKey
+    console.log "Creating zencoder job"
+    console.log outputs
     Zencoder::Job.create
       input: Secure.apiUrl(file.id)
       outputs: outputs

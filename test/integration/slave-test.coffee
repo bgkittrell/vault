@@ -6,8 +6,8 @@ Config = require '../../config'
 Secure = require '../../secure'
 
 server1 = exec 'coffee server.coffee'
-serverUrl1 = "http://#{Config.serverHost}:#{Config.serverPort}/"
-masterUrl = "http://#{Config.serverHost}:#{Config.serverPort}/"
+serverUrl1 = "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
+masterUrl = "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort}/"
 console.log "Testing with URL1: %s", serverUrl1
 server1.stdout.on 'data', (data)->
   console.log("[Server 1 : out] #{data}")
@@ -15,7 +15,7 @@ server1.stderr.on 'data', (data)->
   console.log("[Server 1 : err] #{data}")
 
 server2 = exec "coffee server.coffee --port #{Config.serverPort + 1} --tmp-dir /tmp/uploads2 --media-dir /tmp/media2 --master-url #{serverUrl1}"
-serverUrl2 = "http://#{Config.serverHost}:#{Config.serverPort + 1}/"
+serverUrl2 = "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort + 1}/"
 console.log "Testing with URL2: %s", serverUrl2
 server2.stdout.on 'data', (data)->
   console.log("[Server 2 : out] #{data}")
@@ -23,7 +23,7 @@ server2.stderr.on 'data', (data)->
   console.log("[Server 2 : err] #{data}")
 
 server3 = exec "coffee server.coffee --port #{Config.serverPort + 2} --tmp-dir /tmp/uploads3 --media-dir /tmp/media3 --master-url #{serverUrl1}"
-serverUrl3 = "http://#{Config.serverHost}:#{Config.serverPort + 2}/"
+serverUrl3 = "#{Config.serverProtocol}://#{Config.serverHost}:#{Config.serverPort + 2}/"
 console.log "Testing with URL3: %s", serverUrl3
 server3.stdout.on 'data', (data)->
   console.log("[Server 3 : out] #{data}")

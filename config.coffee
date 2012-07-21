@@ -19,12 +19,15 @@ Config.production =
   deleteDir: '/mnt/vault/delete'
   serverHost: '@VAULT_HOST@'
   serverPort: '@VAULT_PORT@'
-  serverProtocol: 'http'
+  serverProtocol: 'https'
   systemKey: '@VAULT_SYSTEM_KEY@'
   apiKey: '@VAULT_API_KEY@'
   appKey: '@VAULT_APP_KEY@'
   remoteAuthUrl: '@VAULT_REMOTE_AUTH_URL@'
   zencoderKey: '@VAULT_ZENCODER_KEY@'
+  cert: 'certs/vault.crt'
+  key: 'certs/vault.key'
+  ca: 'certs/vault.ca'
 
 Config.profiles =
     'image':

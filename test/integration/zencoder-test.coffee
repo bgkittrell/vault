@@ -4,8 +4,9 @@ url = require 'url'
 client = require '../../util/http-client'
 
 Secure = require '../../secure'
+Config = require '../../config'
 
-serverUrl = Secure.systemUrl(url.format(protocol: 'http', hostname: app.address().address, port: app.address().port, pathname: '/'))
+serverUrl = Secure.systemUrl(url.format(protocol: Config.serverProtocol, hostname: app.address().address, port: app.address().port, pathname: '/'))
 
 module.exports =
   testVideoUpload: (test)->

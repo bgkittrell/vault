@@ -1,7 +1,7 @@
 fs = require 'fs'
 express = require 'express'
 aparser = require 'aparser'
-http = require 'http'
+crypto = require 'crypto'
 
 Config = require './config'
 
@@ -26,10 +26,6 @@ aparser.on '-wide-open', ()->
   Config.wideOpen = true
 
 aparser.parse(process.argv)
-
-fs.mkdir(Config.mediaDir)
-fs.mkdir(Config.tmpDir)
-fs.mkdir(Config.deleteDir)
 
 app = express()
 app.use(express.logger())
@@ -62,6 +58,11 @@ app.configure 'production', ()->
   for key, value of Config.production
     Config[key] = value
 
+  fs.mkdir(Config.mediaDir)
+  fs.mkdir(Config.tmpDir)
+  fs.mkdir(Config.deleteDir)
+
+
 app.get '/crossdomain.xml', (req, res, next)=>
   res.end '<?xml version="1.0"?>\n
       <cross-domain-policy>\n
@@ -74,7 +75,17 @@ app.get '/crossdomain.xml', (req, res, next)=>
 (require './handlers/file-handler')(app)
 
 port = Config.serverPort
-server = http.createServer(app).listen(port)
+
+if Config.cert && Config.key
+  options =
+    key: fs.readFileSync(Config.key)
+    cert: fs.readFileSync(Config.cert)
+
+  server = require('https').createServer(options, app)
+else
+  server = require('http').createServer(app)
+
+server.listen(port)
 
 app.close = ()->
   server.close()

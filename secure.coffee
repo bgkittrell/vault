@@ -86,7 +86,7 @@ class Secure
       @systemUrl(Config.serverUrl())
   @secureUrl: (url, username, password)->
     token = new Buffer("#{username}:#{password}").toString('base64')
-    unless url.match 'http://'
+    unless url.match 'http(s)?://'
       url = Config.serverUrl() + url
     url.replace /:\/\/([^\/]+)\//, "://$1/secure/#{token}/"
 
